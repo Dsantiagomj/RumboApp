@@ -6,13 +6,10 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  // Enable experimental features
-  experimental: {
-    // Enable Partial Prerendering
-    ppr: 'incremental',
-    // TypedRoutes for type-safe routing
-    typedRoutes: true,
-  },
+  // Enable Partial Prerendering (Cache Components)
+  cacheComponents: true,
+  // TypedRoutes for type-safe routing
+  typedRoutes: true,
 
   // Security headers
   async headers() {
