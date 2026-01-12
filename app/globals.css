@@ -1,12 +1,7 @@
-@tailwind base;
+@import 'tailwindcss';
+@plugin 'tailwindcss-animate';
 
-@plugin "tailwindcss-animate";
-
-@custom-variant dark (&:is(.dark *));
-@tailwind components;
-@tailwind utilities;
-
-@theme inline {
+@theme {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -14,125 +9,137 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-positive: var(--positive);
-  --color-negative: var(--negative);
-  --color-neutral: var(--neutral);
-  --color-warning: var(--warning);
-}
 
-:root {
-  --radius: 0.625rem;
+  --color-background: oklch(var(--background));
+  --color-foreground: oklch(var(--foreground));
 
-  /* Purple theme colors */
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.15 0.01 260);
+  --color-card: oklch(var(--card));
+  --color-card-foreground: oklch(var(--card-foreground));
 
-  --primary: oklch(0.62 0.2 270); /* Purple 500 */
-  --primary-foreground: oklch(1 0 0);
+  --color-popover: oklch(var(--popover));
+  --color-popover-foreground: oklch(var(--popover-foreground));
 
-  --secondary: oklch(0.96 0.01 270); /* Purple 50 */
-  --secondary-foreground: oklch(0.2 0.01 270);
+  --color-primary: oklch(var(--primary));
+  --color-primary-foreground: oklch(var(--primary-foreground));
 
-  --accent: oklch(0.96 0.01 270);
-  --accent-foreground: oklch(0.2 0.01 270);
+  --color-secondary: oklch(var(--secondary));
+  --color-secondary-foreground: oklch(var(--secondary-foreground));
 
-  --destructive: oklch(0.63 0.24 27); /* Red */
-  --destructive-foreground: oklch(1 0 0);
+  --color-muted: oklch(var(--muted));
+  --color-muted-foreground: oklch(var(--muted-foreground));
 
-  --muted: oklch(0.96 0.01 260);
-  --muted-foreground: oklch(0.5 0.01 260);
+  --color-accent: oklch(var(--accent));
+  --color-accent-foreground: oklch(var(--accent-foreground));
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.01 260);
+  --color-destructive: oklch(var(--destructive));
+  --color-destructive-foreground: oklch(var(--destructive-foreground));
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.01 260);
+  --color-border: oklch(var(--border));
+  --color-input: oklch(var(--input));
+  --color-ring: oklch(var(--ring));
 
-  --border: oklch(0.92 0.01 260);
-  --input: oklch(0.92 0.01 260);
-  --ring: oklch(0.62 0.2 270);
+  --color-chart-1: oklch(var(--chart-1));
+  --color-chart-2: oklch(var(--chart-2));
+  --color-chart-3: oklch(var(--chart-3));
+  --color-chart-4: oklch(var(--chart-4));
+  --color-chart-5: oklch(var(--chart-5));
 
-  /* Financial semantic colors */
-  --positive: oklch(0.65 0.18 145); /* Green */
-  --negative: oklch(0.63 0.24 27); /* Red */
-  --neutral: oklch(0.55 0.02 240); /* Gray-blue */
-  --warning: oklch(0.78 0.16 70); /* Amber */
-
-  /* Chart colors for financial visualizations */
-  --chart-1: oklch(0.62 0.2 270); /* Purple - primary */
-  --chart-2: oklch(0.65 0.18 145); /* Green - positive */
-  --chart-3: oklch(0.63 0.24 27); /* Red - negative */
-  --chart-4: oklch(0.78 0.16 70); /* Amber - warning */
-  --chart-5: oklch(0.55 0.02 240); /* Gray-blue - neutral */
-}
-
-.dark {
-  --background: oklch(0.12 0.01 260);
-  --foreground: oklch(0.98 0 0);
-
-  --primary: oklch(0.68 0.22 270);
-  --primary-foreground: oklch(0.12 0.01 260);
-
-  --secondary: oklch(0.2 0.02 270);
-  --secondary-foreground: oklch(0.98 0 0);
-
-  --accent: oklch(0.2 0.02 270);
-  --accent-foreground: oklch(0.98 0 0);
-
-  --destructive: oklch(0.55 0.28 27);
-  --destructive-foreground: oklch(0.98 0 0);
-
-  --muted: oklch(0.2 0.02 260);
-  --muted-foreground: oklch(0.7 0.01 260);
-
-  --card: oklch(0.15 0.01 260);
-  --card-foreground: oklch(0.98 0 0);
-
-  --popover: oklch(0.15 0.01 260);
-  --popover-foreground: oklch(0.98 0 0);
-
-  --border: oklch(0.25 0.02 260);
-  --input: oklch(0.25 0.02 260);
-  --ring: oklch(0.68 0.22 270);
-
-  /* Financial colors (same in dark) */
-  --positive: oklch(0.65 0.18 145);
-  --negative: oklch(0.63 0.24 27);
-  --neutral: oklch(0.55 0.02 240);
-  --warning: oklch(0.78 0.16 70);
-
-  /* Chart colors (same in dark) */
-  --chart-1: oklch(0.68 0.22 270);
-  --chart-2: oklch(0.65 0.18 145);
-  --chart-3: oklch(0.63 0.24 27);
-  --chart-4: oklch(0.78 0.16 70);
-  --chart-5: oklch(0.55 0.02 240);
+  --color-positive: oklch(var(--positive));
+  --color-negative: oklch(var(--negative));
+  --color-neutral: oklch(var(--neutral));
+  --color-warning: oklch(var(--warning));
 }
 
 @layer base {
+  :root {
+    --radius: 0.625rem;
+
+    /* Purple theme colors */
+    --background: 0.99 0 0;
+    --foreground: 0.15 0.01 260;
+
+    --primary: 0.62 0.2 270; /* Purple 500 */
+    --primary-foreground: 1 0 0;
+
+    --secondary: 0.96 0.01 270; /* Purple 50 */
+    --secondary-foreground: 0.2 0.01 270;
+
+    --accent: 0.96 0.01 270;
+    --accent-foreground: 0.2 0.01 270;
+
+    --destructive: 0.63 0.24 27; /* Red */
+    --destructive-foreground: 1 0 0;
+
+    --muted: 0.96 0.01 260;
+    --muted-foreground: 0.5 0.01 260;
+
+    --card: 1 0 0;
+    --card-foreground: 0.15 0.01 260;
+
+    --popover: 1 0 0;
+    --popover-foreground: 0.15 0.01 260;
+
+    --border: 0.92 0.01 260;
+    --input: 0.92 0.01 260;
+    --ring: 0.62 0.2 270;
+
+    /* Financial semantic colors */
+    --positive: 0.65 0.18 145; /* Green */
+    --negative: 0.63 0.24 27; /* Red */
+    --neutral: 0.55 0.02 240; /* Gray-blue */
+    --warning: 0.78 0.16 70; /* Amber */
+
+    /* Chart colors for financial visualizations */
+    --chart-1: 0.62 0.2 270; /* Purple - primary */
+    --chart-2: 0.65 0.18 145; /* Green - positive */
+    --chart-3: 0.63 0.24 27; /* Red - negative */
+    --chart-4: 0.78 0.16 70; /* Amber - warning */
+    --chart-5: 0.55 0.02 240; /* Gray-blue - neutral */
+  }
+
+  :root.dark {
+    --background: 0.12 0.01 260;
+    --foreground: 0.98 0 0;
+
+    --primary: 0.68 0.22 270;
+    --primary-foreground: 0.12 0.01 260;
+
+    --secondary: 0.2 0.02 270;
+    --secondary-foreground: 0.98 0 0;
+
+    --accent: 0.2 0.02 270;
+    --accent-foreground: 0.98 0 0;
+
+    --destructive: 0.55 0.28 27;
+    --destructive-foreground: 0.98 0 0;
+
+    --muted: 0.2 0.02 260;
+    --muted-foreground: 0.7 0.01 260;
+
+    --card: 0.15 0.01 260;
+    --card-foreground: 0.98 0 0;
+
+    --popover: 0.15 0.01 260;
+    --popover-foreground: 0.98 0 0;
+
+    --border: 0.25 0.02 260;
+    --input: 0.25 0.02 260;
+    --ring: 0.68 0.22 270;
+
+    /* Financial colors (same in dark) */
+    --positive: 0.65 0.18 145;
+    --negative: 0.63 0.24 27;
+    --neutral: 0.55 0.02 240;
+    --warning: 0.78 0.16 70;
+
+    /* Chart colors (same in dark) */
+    --chart-1: 0.68 0.22 270;
+    --chart-2: 0.65 0.18 145;
+    --chart-3: 0.63 0.24 27;
+    --chart-4: 0.78 0.16 70;
+    --chart-5: 0.55 0.02 240;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
