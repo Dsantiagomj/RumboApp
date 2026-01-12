@@ -59,19 +59,19 @@ export default function Home() {
           <h3 className="text-card-foreground text-2xl font-semibold">Financial Colors</h3>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="space-y-2">
-              <div className="h-16 rounded-md bg-[oklch(var(--positive))]" />
+              <div className="bg-positive h-16 rounded-md" />
               <p className="text-sm font-medium">Positive (Green)</p>
             </div>
             <div className="space-y-2">
-              <div className="h-16 rounded-md bg-[oklch(var(--negative))]" />
+              <div className="bg-negative h-16 rounded-md" />
               <p className="text-sm font-medium">Negative (Red)</p>
             </div>
             <div className="space-y-2">
-              <div className="h-16 rounded-md bg-[oklch(var(--neutral))]" />
+              <div className="bg-neutral h-16 rounded-md" />
               <p className="text-sm font-medium">Neutral (Gray-blue)</p>
             </div>
             <div className="space-y-2">
-              <div className="h-16 rounded-md bg-[oklch(var(--warning))]" />
+              <div className="bg-warning h-16 rounded-md" />
               <p className="text-sm font-medium">Warning (Amber)</p>
             </div>
           </div>
