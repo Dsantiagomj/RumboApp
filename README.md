@@ -23,24 +23,28 @@ Rumbo is a personal finance management application built specifically for Colomb
 ## 🚀 Tech Stack
 
 ### Frontend
+
 - **Next.js 16.1** - App Router with Turbopack (10-14x faster builds)
 - **React 19.2** - Server Components and Actions
 - **Tailwind CSS 4.0** - Oxide engine (5x faster, 100x incremental)
 - **Shadcn/ui** - Component library with oklch colors
 
 ### Backend
+
 - **tRPC 11** - End-to-end type safety
 - **Prisma 7.2** - ORM with PostgreSQL 16
 - **NextAuth.js v5** - Authentication with Argon2
 - **Redis 7** - Rate limiting and caching
 
 ### Infrastructure
+
 - **Docker** - PostgreSQL + PgBouncer + Redis
 - **Vercel** - Production deployment
 - **Cloudflare R2** - File storage
 - **Sentry** - Error monitoring
 
 ### Testing & Quality
+
 - **Vitest** - Unit testing (80%+ coverage target)
 - **Playwright** - E2E testing
 - **Storybook 8** - Component development
@@ -235,6 +239,7 @@ TBD
 ## 🙏 Acknowledgments
 
 Built with modern, production-ready technologies:
+
 - Next.js team for the amazing framework
 - Vercel for hosting and infrastructure
 - Prisma team for the excellent ORM

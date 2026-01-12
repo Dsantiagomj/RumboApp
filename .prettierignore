@@ -1,0 +1,13 @@
+.next
+node_modules
+out
+dist
+build
+.turbo
+.vercel
+.storybook-static
+coverage
+pnpm-lock.yaml
+package-lock.json
+*.min.js
+*.min.css
