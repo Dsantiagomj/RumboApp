@@ -1,5 +1,10 @@
 # Rumbo - Personal Finance Management for Colombians
 
+[![CI/CD](https://github.com/dsantiagomj/RumboApp/workflows/CI%2FCD/badge.svg)](https://github.com/dsantiagomj/RumboApp/actions/workflows/ci.yml)
+[![Security](https://github.com/dsantiagomj/RumboApp/workflows/Security/badge.svg)](https://github.com/dsantiagomj/RumboApp/actions/workflows/security.yml)
+[![Deploy](https://github.com/dsantiagomj/RumboApp/workflows/Deploy/badge.svg)](https://github.com/dsantiagomj/RumboApp/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/dsantiagomj/RumboApp/branch/main/graph/badge.svg)](https://codecov.io/gh/dsantiagomj/RumboApp)
+
 > Modern, privacy-first personal finance app designed specifically for the Colombian market
 
 **Status:** 🚧 Pre-Implementation Phase
@@ -46,8 +51,8 @@ Rumbo is a personal finance management application built specifically for Colomb
 ### Testing & Quality
 
 - **Vitest** - Unit testing (80%+ coverage target)
-- **Playwright** - E2E testing
-- **Storybook 8** - Component development
+- **Playwright** - E2E testing (5 browsers/devices)
+- **Storybook 10** - Component development
 - **ESLint 9** - Flat config
 - **Prettier** - Code formatting
 - **Husky** - Git hooks
