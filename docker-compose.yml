@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rumbo-postgres
+    environment:
+      POSTGRES_USER: rumbo
+      POSTGRES_PASSWORD: rumbo_password
+      POSTGRES_DB: rumbo
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rumbo']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: rumbo-pgbouncer
+    environment:
+      DATABASE_URL: postgres://rumbo:rumbo_password@postgres:5432/rumbo
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 100
+      DEFAULT_POOL_SIZE: 20
+    ports:
+      - '6432:5432'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: rumbo-redis
+    command: redis-server --requirepass rumbo_redis_password --appendonly yes
+    environment:
+      REDIS_PASSWORD: rumbo_redis_password
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'rumbo_redis_password', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
