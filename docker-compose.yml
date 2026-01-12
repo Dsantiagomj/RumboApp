@@ -1,17 +1,30 @@
+# ============================================================================
+# Rumbo Development Infrastructure
+# ⚠️  WARNING: FOR LOCAL DEVELOPMENT ONLY - DO NOT USE IN PRODUCTION
+# ============================================================================
+# This docker-compose file sets up local development services.
+# ALL credentials here are INSECURE and meant ONLY for local development.
+# NEVER deploy these services to production with these credentials.
+# ============================================================================
+
 services:
   postgres:
     image: postgres:16-alpine
     container_name: rumbo-postgres
+    command:
+      - postgres
+      - -c
+      - password_encryption=md5
     environment:
-      POSTGRES_USER: rumbo
-      POSTGRES_PASSWORD: rumbo_password
-      POSTGRES_DB: rumbo
+      POSTGRES_USER: ${POSTGRES_USER:-rumbo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rumbo_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-rumbo}
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U rumbo']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-rumbo}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,7 +33,7 @@ services:
     image: edoburu/pgbouncer:latest
     container_name: rumbo-pgbouncer
     environment:
-      DATABASE_URL: postgres://rumbo:rumbo_password@postgres:5432/rumbo
+      DATABASE_URL: postgres://${POSTGRES_USER:-rumbo}:${POSTGRES_PASSWORD:-rumbo_dev_password}@postgres:5432/${POSTGRES_DB:-rumbo}
       POOL_MODE: transaction
       MAX_CLIENT_CONN: 100
       DEFAULT_POOL_SIZE: 20
@@ -33,15 +46,15 @@ services:
   redis:
     image: redis:7-alpine
     container_name: rumbo-redis
-    command: redis-server --requirepass rumbo_redis_password --appendonly yes
+    command: redis-server --requirepass ${REDIS_PASSWORD:-rumbo_dev_redis} --appendonly yes
     environment:
-      REDIS_PASSWORD: rumbo_redis_password
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-rumbo_dev_redis}
     ports:
       - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', 'rumbo_redis_password', 'ping']
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD:-rumbo_dev_redis}', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
