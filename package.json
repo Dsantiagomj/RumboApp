@@ -29,6 +29,7 @@
     "build-storybook": "storybook build",
     "analyze": "ANALYZE=true next build",
     "check": "pnpm run format:check && pnpm run lint && pnpm run type-check && pnpm run test run",
+    "lint-staged": "lint-staged",
     "prepare": "husky"
   },
   "dependencies": {

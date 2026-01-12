@@ -1,0 +1,8 @@
+{
+  "*.{js,jsx,ts,tsx}": [
+    "bash scripts/validate-code-standards.sh",
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "*.{json,md,css}": ["prettier --write"]
+}
