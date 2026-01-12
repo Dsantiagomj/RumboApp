@@ -70,9 +70,10 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "2️⃣  Checking for default exports (named exports only)..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Allowed files for default exports (config files + Next.js app/ directory files)
+# Allowed files for default exports (config files + Next.js app/ directory files + Storybook stories)
 # Next.js requires default exports for: layout.tsx, page.tsx, loading.tsx, error.tsx, not-found.tsx
-ALLOWED_DEFAULT_EXPORTS="next\.config|tailwind\.config|postcss\.config|vitest\.config|playwright\.config|\.storybook|app/.*(layout|page|loading|error|not-found|template|default|route)\.tsx?$"
+# Storybook requires default exports for: *.stories.tsx
+ALLOWED_DEFAULT_EXPORTS="next\.config|tailwind\.config|postcss\.config|vitest\.config|playwright\.config|\.storybook|\.stories\.tsx?$|app/.*(layout|page|loading|error|not-found|template|default|route)\.tsx?$"
 
 DEFAULT_EXPORTS=$(echo "$STAGED_FILES" | \
   grep -v -E "$ALLOWED_DEFAULT_EXPORTS" | \
