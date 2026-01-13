@@ -409,7 +409,7 @@ describe('Button', () => {
 - [Project RULEBOOK](../.claude/RULEBOOK.md)
 - [Code Standards](../.rumbo/CODE_STANDARDS.md)
 - [Tech Stack Details](../.rumbo/TECH_STACK.md)
-- [Branch Protection Rules](./BRANCH_PROTECTION.md)
+- [Branch Protection Rules](../.claude/BRANCH_PROTECTION.md)
 - [Conventional Commits](https://www.conventionalcommits.org/)
 
 ---

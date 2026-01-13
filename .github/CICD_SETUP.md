@@ -346,7 +346,7 @@ Branch protection prevents direct pushes to `main` and enforces code review work
 - ✅ CI checks guaranteed to run
 - ✅ Maintains clean git history
 
-**See also**: [Branch Protection Rules](./BRANCH_PROTECTION.md)
+**See also**: [Branch Protection Rules](../.claude/BRANCH_PROTECTION.md)
 
 ### 7. Semantic Versioning & Releases
 
