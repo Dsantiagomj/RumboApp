@@ -45,6 +45,7 @@ export default [
       '.turbo/**',
       'coverage/**',
       'storybook-static/**',
+      'prisma/**',
     ],
   },
 ];
