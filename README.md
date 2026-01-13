@@ -3,6 +3,7 @@
 [![CI/CD](https://github.com/dsantiagomj/RumboApp/workflows/CI%2FCD/badge.svg)](https://github.com/dsantiagomj/RumboApp/actions/workflows/ci.yml)
 [![Security](https://github.com/dsantiagomj/RumboApp/workflows/Security/badge.svg)](https://github.com/dsantiagomj/RumboApp/actions/workflows/security.yml)
 [![Deploy](https://github.com/dsantiagomj/RumboApp/workflows/Deploy/badge.svg)](https://github.com/dsantiagomj/RumboApp/actions/workflows/deploy.yml)
+[![Release](https://github.com/dsantiagomj/RumboApp/workflows/Release/badge.svg)](https://github.com/dsantiagomj/RumboApp/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/dsantiagomj/RumboApp/branch/main/graph/badge.svg)](https://codecov.io/gh/dsantiagomj/RumboApp)
 
 > Modern, privacy-first personal finance app designed specifically for the Colombian market
@@ -170,13 +171,36 @@ pnpm storybook
 
 ## 🚢 Deployment
 
+### Environments
+
+- **Production (main):** https://rumbo-app.vercel.app/
+  - Deployed automatically on merge to `main`
+  - Semantic versioning enabled
+  - All CI checks required
+
+- **Development (develop):** https://rumbo-app-git-develop-\*.vercel.app/
+  - Preview deployment for `develop` branch
+  - Latest development features
+  - Testing before production
+
 ### Vercel (Recommended)
+
+Automated via GitHub Actions:
+
+- Push to `main` → Production deployment
+- Push to `develop` → Preview deployment
+- Pull requests → Temporary preview URLs
+
+Manual deployment:
 
 ```bash
 # Install Vercel CLI
 pnpm i -g vercel
 
-# Deploy
+# Deploy to production
+vercel --prod
+
+# Deploy to preview
 vercel
 ```
 
@@ -225,13 +249,44 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## 🤝 Contributing
 
-This is a personal project, but contributions are welcome!
+Contributions are welcome! Please read our [Contributing Guidelines](./.github/CONTRIBUTING.md) for details on:
+
+- Development workflow and branch strategy
+- Commit conventions (Conventional Commits)
+- Pull request process
+- Code standards and testing requirements
+
+### Quick Start
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch from `develop`: `git checkout -b feature/your-feature`
+3. Make changes following [Code Standards](./.rumbo/CODE_STANDARDS.md)
+4. Write tests (80%+ coverage target)
+5. Commit using [Conventional Commits](https://www.conventionalcommits.org/):
+   - `feat:` for new features (minor version bump)
+   - `fix:` for bug fixes (patch version bump)
+   - `feat!:` for breaking changes (major version bump)
+6. Push and create PR to `develop`
+7. Wait for CI checks and code review
+
+### Versioning
+
+We use [Semantic Versioning](https://semver.org/) with automated releases:
+
+- **Patch (0.0.X):** `fix:` commits → Bug fixes, minor improvements
+- **Minor (0.X.0):** `feat:` commits → New features, backwards-compatible
+- **Major (X.0.0):** `feat!:` or `BREAKING CHANGE:` → Breaking changes
+
+Releases are automated via [semantic-release](https://github.com/semantic-release/semantic-release) when code is merged to `main`.
+
+### Branch Protection
+
+- ✅ Direct pushes to `main` are **blocked**
+- ✅ All changes require **pull requests**
+- ✅ **1 approval** required before merge
+- ✅ All **CI checks must pass** (lint, tests, build, security)
+
+See [Branch Protection Rules](./.github/BRANCH_PROTECTION.md) for details.
 
 ---
 

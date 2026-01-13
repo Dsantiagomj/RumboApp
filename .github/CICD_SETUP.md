@@ -277,6 +277,117 @@ After configuring all secrets:
 
 ---
 
+## Security Enhancements (2026-01-13)
+
+### 5. Snyk Security Scanning
+
+**Status**: ✅ Configured
+
+Snyk integration provides real-time vulnerability scanning for dependencies.
+
+**How it was configured**:
+
+1. Created Snyk account at https://snyk.io/
+2. Generated API token: Account Settings → General → API Token
+3. Added `SNYK_TOKEN` to GitHub Secrets:
+   - Navigate to: https://github.com/Dsantiagomj/RumboApp/settings/secrets/actions
+   - Name: `SNYK_TOKEN`
+   - Value: [Snyk API token]
+4. Workflow already configured in `.github/workflows/security.yml`
+
+**Features**:
+
+- Scans dependencies for vulnerabilities on push/schedule
+- Severity threshold: High
+- Report uploaded as artifact
+- Continue on error (doesn't block CI)
+
+**To view reports**:
+
+1. Go to GitHub Actions → Security workflow run
+2. Download "snyk-report" artifact
+3. Or visit https://app.snyk.io/org/[your-org]/projects
+
+### 6. Branch Protection Rules
+
+**Status**: ✅ Enabled
+
+Branch protection prevents direct pushes to `main` and enforces code review workflow.
+
+**Configured Rules** (on `main` branch):
+
+1. ✅ **Require pull request before merging**
+   - Minimum 1 approval required
+   - Dismiss stale reviews when new commits pushed
+
+2. ✅ **Require status checks to pass**
+   - All CI/CD checks must pass
+   - Branch must be up to date
+
+3. ✅ **Do not allow bypassing settings**
+   - Rules apply to administrators
+   - No force pushes allowed
+
+4. ✅ **Restrict who can push**
+   - Direct pushes blocked for everyone
+
+**How it was configured**:
+
+1. Navigate to: https://github.com/Dsantiagomj/RumboApp/settings/branches
+2. Click "Add branch protection rule"
+3. Branch name pattern: `main`
+4. Enable settings listed above
+5. Click "Create"
+
+**Impact**:
+
+- ✅ No more accidental pushes to production
+- ✅ All code reviewed before merging
+- ✅ CI checks guaranteed to run
+- ✅ Maintains clean git history
+
+**See also**: [Branch Protection Rules](./BRANCH_PROTECTION.md)
+
+### 7. Semantic Versioning & Releases
+
+**Status**: ✅ Configured
+
+Automated version management using semantic-release.
+
+**How it works**:
+
+1. Commits follow [Conventional Commits](https://www.conventionalcommits.org/)
+2. On merge to `main`, semantic-release runs
+3. Analyzes commits since last release
+4. Determines version bump (major/minor/patch)
+5. Creates GitHub release with changelog
+6. Updates package.json and CHANGELOG.md
+
+**Commit Convention**:
+
+- `feat:` → Minor bump (0.1.0 → 0.2.0)
+- `fix:` → Patch bump (0.1.0 → 0.1.1)
+- `feat!:` or `BREAKING CHANGE:` → Major bump (0.1.0 → 1.0.0)
+
+**Configuration Files**:
+
+- `.releaserc.json` - semantic-release config
+- `.github/workflows/release.yml` - Release workflow
+
+**Example**:
+
+```bash
+git commit -m "feat: Add user profile editing"
+# Merges to main → Creates v0.2.0 release
+
+git commit -m "fix: Resolve theme toggle bug"
+# Merges to main → Creates v0.2.1 release
+```
+
+**See also**: [Contributing Guidelines](./CONTRIBUTING.md)
+
+---
+
 ## Next Steps
 
 1. ✅ Get `VERCEL_ORG_ID` from Vercel dashboard
@@ -285,9 +396,13 @@ After configuring all secrets:
 4. ✅ Simplify Lighthouse job (make token optional)
 5. ✅ Push changes and verify workflows pass
 6. ✅ Test deployment to Vercel
-7. ⏸️ (Optional) Configure additional secrets for enhanced features
+7. ✅ Configure Snyk security scanning
+8. ✅ Enable GitHub branch protection on `main`
+9. ✅ Set up semantic versioning and releases
+10. ✅ Create `develop` branch for preview deployments
+11. ⏸️ (Optional) Configure additional secrets for enhanced features
 
 ---
 
-**Last Updated**: 2026-01-12
+**Last Updated**: 2026-01-13
 **Maintained By**: @Dsantiagomj
