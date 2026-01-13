@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev --turbopack",
     "dev:all": "bash scripts/dev.sh",
     "build": "next build",
@@ -92,6 +93,8 @@
     "@eslint/eslintrc": "^3.3.3",
     "@next/bundle-analyzer": "^16.1.1",
     "@playwright/test": "^1.49.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
     "@storybook/addon-a11y": "^10.1.11",
     "@storybook/addon-links": "^10.1.11",
     "@storybook/nextjs": "^10.1.11",
@@ -126,6 +129,7 @@
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
     "prisma": "^6.0.0",
+    "semantic-release": "^25.0.2",
     "storybook": "^10.1.11",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.21.0",
@@ -143,7 +147,8 @@
   "pnpm": {
     "overrides": {
       "@auth/core": "0.41.0",
-      "esbuild": "^0.27.2"
+      "esbuild": "^0.27.2",
+      "elliptic": "^6.6.1"
     }
   },
   "prisma": {

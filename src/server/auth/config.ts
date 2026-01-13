@@ -150,11 +150,13 @@ export const authConfig = {
 
   // Events (for logging)
   events: {
-    async signIn({ user }) {
-      console.log(`User signed in: ${user.email ?? 'unknown'}`);
+    async signIn() {
+      // NextAuth debug mode handles logging
+      return;
     },
     async signOut() {
-      console.log('User signed out');
+      // NextAuth debug mode handles logging
+      return;
     },
   },
 
