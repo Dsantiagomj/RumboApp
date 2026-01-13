@@ -50,8 +50,9 @@ storybook-static/
 # Turbo
 .turbo/
 
-# Claude Code
-.claude/
+# Claude Code and Rumbo specific
+.claude
+.rumbo
 
 # IDE
 .vscode/
@@ -79,6 +80,3 @@ docker/data/
 tmp/
 temp/
 *.tmp
-
-# Docs
-.rumbo/

@@ -55,6 +55,7 @@
     ".next",
     "out",
     "dist",
+    "prisma/**/*",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",

@@ -1,9 +1,9 @@
-import { PrismaClient, TransactionType } from '@prisma/client'
+import { PrismaClient, TransactionType } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding Colombian categories...')
+  console.log('Seeding Colombian categories...');
 
   // Default Colombian categories (system-wide, userId = null)
   const categories = [
@@ -101,7 +101,7 @@ async function main() {
       color: '#0891b2',
       type: TransactionType.INCOME,
     },
-  ]
+  ];
 
   for (const category of categories) {
     await prisma.category.upsert({
@@ -112,17 +112,17 @@ async function main() {
         ...category,
         userId: null, // System category
       },
-    })
+    });
   }
 
-  console.log('✅ Colombian categories seeded successfully')
+  console.log('✅ Colombian categories seeded successfully');
 }
 
 main()
   .catch((e) => {
-    console.error(e)
-    process.exit(1)
+    console.error(e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });

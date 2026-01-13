@@ -286,7 +286,7 @@ Releases are automated via [semantic-release](https://github.com/semantic-releas
 - ✅ **1 approval** required before merge
 - ✅ All **CI checks must pass** (lint, tests, build, security)
 
-See [Branch Protection Rules](./.github/BRANCH_PROTECTION.md) for details.
+See [Branch Protection Rules](./.claude/BRANCH_PROTECTION.md) for details.
 
 ---
 
