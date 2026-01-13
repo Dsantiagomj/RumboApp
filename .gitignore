@@ -50,8 +50,13 @@ storybook-static/
 # Turbo
 .turbo/
 
-# Claude Code
-.claude/
+# Claude Code (ignore temporary/local/toolkit files only)
+.claude/CURRENT_PLAN.md
+.claude/settings.local.json
+.claude/.toolkit-version
+.claude/commands/
+.claude/agents/
+.claude/agents-active.txt
 
 # IDE
 .vscode/
@@ -80,5 +85,4 @@ tmp/
 temp/
 *.tmp
 
-# Docs
-.rumbo/
+# Note: .rumbo/ and .claude/ docs are now tracked (project-specific)
