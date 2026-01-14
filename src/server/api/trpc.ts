@@ -36,9 +36,15 @@ export const createTRPCContext = async (opts: FetchCreateContextFnOptions) => {
 };
 
 /**
+ * Context type helper
+ * Inferred from createTRPCContext return type
+ */
+export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
+
+/**
  * Initialize tRPC with configuration
  */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<Context>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
@@ -95,3 +101,28 @@ export const publicProcedure = t.procedure;
  * ```
  */
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+
+/**
+ * Export tRPC instance for middleware creation
+ * Used by middleware modules to create type-safe middleware
+ */
+export { t };
+
+/**
+ * Re-export middleware from middleware module
+ * Provides RBAC (Role-Based Access Control) and RLS (Row-Level Security)
+ *
+ * Available exports:
+ * - adminProcedure: Procedure for admin-only routes
+ * - enforceUserIsAdmin: Admin role check middleware
+ * - enforceResourceOwnership: Generic ownership validation
+ * - enforceUserIdMatch: Validates userId in input
+ * - enforceOwnershipViaDb: Database-based ownership validation
+ */
+export {
+  adminProcedure,
+  enforceUserIsAdmin,
+  enforceResourceOwnership,
+  enforceUserIdMatch,
+  enforceOwnershipViaDb,
+} from './middleware';
