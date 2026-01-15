@@ -107,22 +107,3 @@ export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
  * Used by middleware modules to create type-safe middleware
  */
 export { t };
-
-/**
- * Re-export middleware from middleware module
- * Provides RBAC (Role-Based Access Control) and RLS (Row-Level Security)
- *
- * Available exports:
- * - adminProcedure: Procedure for admin-only routes
- * - enforceUserIsAdmin: Admin role check middleware
- * - enforceResourceOwnership: Generic ownership validation
- * - enforceUserIdMatch: Validates userId in input
- * - enforceOwnershipViaDb: Database-based ownership validation
- */
-export {
-  adminProcedure,
-  enforceUserIsAdmin,
-  enforceResourceOwnership,
-  enforceUserIdMatch,
-  enforceOwnershipViaDb,
-} from './middleware';
