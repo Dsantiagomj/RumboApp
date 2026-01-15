@@ -38,7 +38,7 @@ export function SocialAuthButtons({
         disabled={isLoading}
         whileHover={{ scale: isLoading ? 1 : 1.02 }}
         whileTap={{ scale: isLoading ? 1 : 0.98 }}
-        className="border-input bg-input text-foreground hover:border-input/80 hover:bg-input/80 focus:ring-ring flex w-full items-center justify-center gap-3 rounded-lg border px-4 py-3 transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        className="border-input bg-input text-foreground hover:border-input/80 hover:bg-input/80 focus:ring-ring flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border px-4 py-3 transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       >
         {/* Google Icon */}
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
@@ -69,7 +69,7 @@ export function SocialAuthButtons({
         disabled={isLoading}
         whileHover={{ scale: isLoading ? 1 : 1.02 }}
         whileTap={{ scale: isLoading ? 1 : 0.98 }}
-        className="border-input bg-input text-foreground hover:border-input/80 hover:bg-input/80 focus:ring-ring flex w-full items-center justify-center gap-3 rounded-lg border px-4 py-3 transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        className="border-input bg-input text-foreground hover:border-input/80 hover:bg-input/80 focus:ring-ring flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border px-4 py-3 transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       >
         {/* Apple Icon */}
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">

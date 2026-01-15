@@ -134,7 +134,7 @@ export function IdentityVerificationStep({
               disabled={isLoading}
               whileHover={{ scale: isLoading ? 1 : 1.02 }}
               whileTap={{ scale: isLoading ? 1 : 0.98 }}
-              className="border-border text-foreground hover:bg-input flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-3.5 font-medium transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              className="border-border text-foreground hover:bg-input flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-3.5 font-medium transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               Atrás
             </motion.button>
@@ -146,7 +146,7 @@ export function IdentityVerificationStep({
             disabled={isLoading}
             whileHover={{ scale: isLoading ? 1 : 1.02 }}
             whileTap={{ scale: isLoading ? 1 : 0.98 }}
-            className="bg-primary hover:bg-primary/90 focus:ring-primary/50 flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-3.5 font-medium text-white transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-primary hover:bg-primary/90 focus:ring-primary/50 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-3.5 font-medium text-white transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading && <Spinner size="sm" />}
             {isLoading ? 'Guardando...' : 'Completar Verificación'}
