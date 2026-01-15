@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
 import { LoginForm } from '@/features/auth/components/login-form';
-import type { LoginFormData } from '@/features/auth/schemas/login-schema';
+import { useLogin } from '@/features/auth/hooks/use-auth';
 
 /**
  * Login Page
@@ -12,20 +10,7 @@ import type { LoginFormData } from '@/features/auth/schemas/login-schema';
  * Uses auth layout with hero carousel.
  */
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
-    try {
-      // TODO: Implement tRPC login mutation
-      console.log('Login data:', data);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-    } catch (error) {
-      console.error('Login error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const loginMutation = useLogin();
 
   const handleGoogleClick = () => {
     // TODO: Implement Google OAuth
@@ -39,10 +24,10 @@ export default function LoginPage() {
 
   return (
     <LoginForm
-      onSubmit={handleSubmit}
+      onSubmit={(data) => loginMutation.mutate(data)}
       onGoogleClick={handleGoogleClick}
       onAppleClick={handleAppleClick}
-      isLoading={isLoading}
+      isLoading={loginMutation.isPending}
     />
   );
 }

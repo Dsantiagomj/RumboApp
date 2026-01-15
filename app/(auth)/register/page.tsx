@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
 import { RegisterForm } from '@/features/auth/components/register-form';
-import type { RegisterFormData } from '@/features/auth/schemas/register-schema';
+import { useRegister } from '@/features/auth/hooks/use-auth';
 
 /**
  * Register Page
@@ -12,20 +10,7 @@ import type { RegisterFormData } from '@/features/auth/schemas/register-schema';
  * Uses auth layout with hero carousel.
  */
 export default function RegisterPage() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (data: RegisterFormData) => {
-    setIsLoading(true);
-    try {
-      // TODO: Implement tRPC register mutation
-      console.log('Register data:', data);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-    } catch (error) {
-      console.error('Register error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const registerMutation = useRegister();
 
   const handleGoogleClick = () => {
     // TODO: Implement Google OAuth
@@ -39,10 +24,10 @@ export default function RegisterPage() {
 
   return (
     <RegisterForm
-      onSubmit={handleSubmit}
+      onSubmit={(data) => registerMutation.mutate(data)}
       onGoogleClick={handleGoogleClick}
       onAppleClick={handleAppleClick}
-      isLoading={isLoading}
+      isLoading={registerMutation.isPending}
     />
   );
 }

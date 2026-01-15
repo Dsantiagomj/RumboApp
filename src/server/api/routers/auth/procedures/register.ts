@@ -25,7 +25,7 @@ export type UserWithoutPassword = Omit<User, 'password'>;
 /**
  * Register a new user
  *
- * @param input - Registration data (email, password, name)
+ * @param input - Registration data (email, password, firstName, lastName)
  * @param db - Prisma client instance
  * @returns User object without password
  * @throws TRPCError with CONFLICT if email already exists
@@ -35,7 +35,8 @@ export async function registerUser(
   input: RegisterInput,
   db: PrismaClient
 ): Promise<UserWithoutPassword> {
-  const { email, password, name } = input;
+  const { email, password, firstName, lastName } = input;
+  const name = `${firstName} ${lastName}`.trim();
 
   // Check if user already exists
   const existingUser = await db.user.findUnique({

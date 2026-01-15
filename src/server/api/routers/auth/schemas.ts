@@ -29,7 +29,8 @@ const passwordSchema = z
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: passwordSchema,
-  name: z.string().min(1, 'Name is required').max(255, 'Name is too long'),
+  firstName: z.string().min(1, 'First name is required').max(50, 'First name is too long'),
+  lastName: z.string().min(1, 'Last name is required').max(50, 'Last name is too long'),
 });
 
 /**
