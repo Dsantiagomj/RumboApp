@@ -1,22 +1,20 @@
-'use client';
+import { Suspense } from 'react';
 
-import { PasswordResetRequestForm } from '@/features/auth/components/password-reset-request-form';
-import { useRequestPasswordReset } from '@/features/auth/hooks/use-auth';
+import { PasswordResetRequestClient } from './reset-password-request-client';
 
 /**
- * Password Reset Request Page
+ * Password Reset Request Page (Server Component)
  *
  * Allows users to request a password reset email.
  * Uses auth layout with hero carousel.
+ *
+ * Wrapped in Suspense to prevent Math.random() prerender errors
+ * from framer-motion animations in client components.
  */
 export default function PasswordResetRequestPage() {
-  const requestResetMutation = useRequestPasswordReset();
-
   return (
-    <PasswordResetRequestForm
-      onSubmit={(data) => requestResetMutation.mutate(data)}
-      isLoading={requestResetMutation.isPending}
-      isSuccess={requestResetMutation.isSuccess}
-    />
+    <Suspense fallback={<div className="flex items-center justify-center p-8">Cargando...</div>}>
+      <PasswordResetRequestClient />
+    </Suspense>
   );
 }

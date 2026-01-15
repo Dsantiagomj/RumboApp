@@ -1,30 +1,26 @@
-'use client';
+import { Suspense } from 'react';
 
-import { use } from 'react';
-
-import { PasswordResetForm } from '@/features/auth/components/password-reset-form';
-import { useResetPassword } from '@/features/auth/hooks/use-auth';
+import { PasswordResetClient } from './reset-password-client';
 
 /**
- * Password Reset Page
+ * Password Reset Page (Server Component)
  *
  * Allows users to set a new password using a reset token.
  * Uses auth layout with hero carousel.
+ *
+ * Wrapped in Suspense to prevent Math.random() prerender errors
+ * from framer-motion animations in client components.
  */
-export default function PasswordResetPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = use(params);
-  const resetPasswordMutation = useResetPassword();
+export default async function PasswordResetPage({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token } = await params;
 
   return (
-    <PasswordResetForm
-      onSubmit={(data) =>
-        resetPasswordMutation.mutate({
-          token,
-          newPassword: data.password,
-        })
-      }
-      isLoading={resetPasswordMutation.isPending}
-      isSuccess={resetPasswordMutation.isSuccess}
-    />
+    <Suspense fallback={<div className="flex items-center justify-center p-8">Cargando...</div>}>
+      <PasswordResetClient token={token} />
+    </Suspense>
   );
 }

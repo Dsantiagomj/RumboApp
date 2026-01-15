@@ -1,33 +1,20 @@
-'use client';
+import { Suspense } from 'react';
 
-import { LoginForm } from '@/features/auth/components/login-form';
-import { useLogin } from '@/features/auth/hooks/use-auth';
+import { LoginClient } from './login-client';
 
 /**
- * Login Page
+ * Login Page (Server Component)
  *
  * Displays the login form with social auth options.
  * Uses auth layout with hero carousel.
+ *
+ * Wrapped in Suspense to prevent Math.random() prerender errors
+ * from framer-motion animations in client components.
  */
 export default function LoginPage() {
-  const loginMutation = useLogin();
-
-  const handleGoogleClick = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google OAuth clicked');
-  };
-
-  const handleAppleClick = () => {
-    // TODO: Implement Apple OAuth
-    console.log('Apple OAuth clicked');
-  };
-
   return (
-    <LoginForm
-      onSubmit={(data) => loginMutation.mutate(data)}
-      onGoogleClick={handleGoogleClick}
-      onAppleClick={handleAppleClick}
-      isLoading={loginMutation.isPending}
-    />
+    <Suspense fallback={<div className="flex items-center justify-center p-8">Cargando...</div>}>
+      <LoginClient />
+    </Suspense>
   );
 }

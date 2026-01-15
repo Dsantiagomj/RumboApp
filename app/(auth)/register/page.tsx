@@ -1,33 +1,20 @@
-'use client';
+import { Suspense } from 'react';
 
-import { RegisterForm } from '@/features/auth/components/register-form';
-import { useRegister } from '@/features/auth/hooks/use-auth';
+import { RegisterClient } from './register-client';
 
 /**
- * Register Page
+ * Register Page (Server Component)
  *
  * Displays the registration form with social auth options.
  * Uses auth layout with hero carousel.
+ *
+ * Wrapped in Suspense to prevent Math.random() prerender errors
+ * from framer-motion animations in client components.
  */
 export default function RegisterPage() {
-  const registerMutation = useRegister();
-
-  const handleGoogleClick = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google OAuth clicked');
-  };
-
-  const handleAppleClick = () => {
-    // TODO: Implement Apple OAuth
-    console.log('Apple OAuth clicked');
-  };
-
   return (
-    <RegisterForm
-      onSubmit={(data) => registerMutation.mutate(data)}
-      onGoogleClick={handleGoogleClick}
-      onAppleClick={handleAppleClick}
-      isLoading={registerMutation.isPending}
-    />
+    <Suspense fallback={<div className="flex items-center justify-center p-8">Cargando...</div>}>
+      <RegisterClient />
+    </Suspense>
   );
 }
