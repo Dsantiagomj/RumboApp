@@ -46,7 +46,7 @@ export async function registerUser(
   if (existingUser) {
     throw new TRPCError({
       code: 'CONFLICT',
-      message: 'Email already registered',
+      message: 'El correo electrónico ya está registrado',
     });
   }
 

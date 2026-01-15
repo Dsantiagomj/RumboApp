@@ -57,10 +57,10 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
           {/* Custom checkbox */}
           <div className="relative mt-0.5 flex-shrink-0">
             <motion.div
-              className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+              className={`flex h-5 w-5 items-center justify-center rounded border transition-colors peer-focus:ring-2 peer-focus:ring-offset-2 ${
                 hasError
-                  ? 'border-destructive bg-input peer-checked:border-destructive peer-checked:bg-destructive'
-                  : 'border-input bg-input peer-checked:border-primary peer-checked:bg-primary'
+                  ? 'border-destructive bg-input peer-checked:border-destructive peer-checked:bg-destructive peer-focus:ring-destructive'
+                  : 'border-input bg-input peer-checked:border-primary peer-checked:bg-primary peer-focus:ring-primary'
               }`}
               whileTap={{ scale: 0.95 }}
             >

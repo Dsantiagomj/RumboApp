@@ -39,7 +39,7 @@ export async function loginUser(input: LoginInput, db: PrismaClient): Promise<Us
   if (!user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'Invalid email or password',
+      message: 'Correo electrónico o contraseña inválidos',
     });
   }
 
@@ -47,7 +47,7 @@ export async function loginUser(input: LoginInput, db: PrismaClient): Promise<Us
   if (!user.password) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'Invalid email or password',
+      message: 'Correo electrónico o contraseña inválidos',
     });
   }
 
@@ -57,7 +57,7 @@ export async function loginUser(input: LoginInput, db: PrismaClient): Promise<Us
   if (!isPasswordValid) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'Invalid email or password',
+      message: 'Correo electrónico o contraseña inválidos',
     });
   }
 

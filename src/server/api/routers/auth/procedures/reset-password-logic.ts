@@ -42,7 +42,8 @@ export async function resetPassword(
     if (!tokenData) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'Invalid or expired reset token. Please request a new password reset.',
+        message:
+          'Token de restablecimiento inválido o expirado. Por favor, solicita un nuevo restablecimiento de contraseña.',
       });
     }
 
@@ -54,7 +55,8 @@ export async function resetPassword(
 
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'Reset link has expired. Please request a new password reset.',
+        message:
+          'El enlace de restablecimiento ha expirado. Por favor, solicita un nuevo restablecimiento de contraseña.',
       });
     }
 
@@ -72,7 +74,7 @@ export async function resetPassword(
     if (!user || user.deletedAt) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'User account not found or has been deleted.',
+        message: 'Cuenta de usuario no encontrada o ha sido eliminada.',
       });
     }
 
@@ -101,7 +103,8 @@ export async function resetPassword(
 
     return {
       success: true,
-      message: 'Password has been reset successfully. You can now log in with your new password.',
+      message:
+        'Tu contraseña ha sido restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña.',
     };
   } catch (error) {
     // Re-throw TRPCError as-is (already formatted)
@@ -115,7 +118,8 @@ export async function resetPassword(
     // Generic error for unexpected failures
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'An error occurred while resetting your password. Please try again later.',
+      message:
+        'Ocurrió un error al restablecer tu contraseña. Por favor, intenta de nuevo más tarde.',
     });
   }
 }

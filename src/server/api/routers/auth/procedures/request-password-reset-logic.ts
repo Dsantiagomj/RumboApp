@@ -59,7 +59,7 @@ export async function requestPasswordReset(
     return {
       success: true,
       message:
-        'If an account exists with this email, you will receive a password reset link shortly.',
+        'Si existe una cuenta con este correo, recibirás un enlace para restablecer tu contraseña.',
     };
   } catch (error) {
     // Log error for monitoring but don't expose details to client
@@ -68,7 +68,7 @@ export async function requestPasswordReset(
     // Only throw for server errors, not user errors
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'An error occurred while processing your request. Please try again later.',
+      message: 'Ocurrió un error al procesar tu solicitud. Por favor, intenta de nuevo más tarde.',
     });
   }
 }
