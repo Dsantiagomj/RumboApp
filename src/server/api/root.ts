@@ -7,6 +7,7 @@
 
 import { createTRPCRouter, publicProcedure } from '@/server/api/trpc';
 import { authRouter } from '@/server/api/routers/auth';
+import { onboardingRouter } from '@/server/api/routers/onboarding';
 import { userRouter } from '@/server/api/routers/user';
 
 /**
@@ -15,6 +16,7 @@ import { userRouter } from '@/server/api/routers/user';
  * This is the main router that combines all feature routers.
  * Currently includes:
  * - authRouter: Authentication (register, login, logout)
+ * - onboardingRouter: Onboarding flow (personal info, identity verification)
  * - userRouter: User management
  *
  * Future routers:
@@ -43,6 +45,7 @@ export const appRouter = createTRPCRouter({
 
   // Feature routers
   auth: authRouter,
+  onboarding: onboardingRouter,
   user: userRouter,
 
   // Future routers will be added here:
