@@ -1,5 +1,7 @@
 'use client';
 
+import { signIn } from 'next-auth/react';
+
 import { LoginForm } from '@/features/auth/components/login-form';
 import { useLogin } from '@/features/auth/hooks/use-auth';
 
@@ -9,14 +11,13 @@ import { useLogin } from '@/features/auth/hooks/use-auth';
 export function LoginClient() {
   const loginMutation = useLogin();
 
-  const handleGoogleClick = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google OAuth clicked');
+  const handleGoogleClick = async () => {
+    await signIn('google', { callbackUrl: '/dashboard' });
   };
 
-  const handleAppleClick = () => {
-    // TODO: Implement Apple OAuth
-    console.log('Apple OAuth clicked');
+  const handleAppleClick = async () => {
+    // Apple OAuth not configured yet
+    console.log('Apple OAuth not configured');
   };
 
   return (
