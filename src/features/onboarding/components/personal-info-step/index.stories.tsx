@@ -39,7 +39,7 @@ export const WithDefaultValues: Story = {
     onSubmit: (data) => console.log('Personal info submitted:', data),
     isLoading: false,
     defaultValues: {
-      dateOfBirth: '1990-01-15',
+      dateOfBirth: new Date('1990-01-15'),
       phoneNumber: '+57 300 123 4567',
     },
   },
