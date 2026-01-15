@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 
+import { Spinner } from '@/components/ui/spinner';
+
 import type { LoginFormData } from '../../schemas/login-schema';
 import { loginSchema } from '../../schemas/login-schema';
 import { FormInput } from '../form-input';
@@ -149,10 +151,11 @@ export function LoginForm({
         <motion.button
           type="submit"
           disabled={isLoading}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="bg-primary hover:bg-primary/90 focus:ring-primary/50 w-full rounded-lg px-4 py-3.5 font-medium text-white transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+          whileHover={{ scale: isLoading ? 1 : 1.02 }}
+          whileTap={{ scale: isLoading ? 1 : 0.98 }}
+          className="bg-primary hover:bg-primary/90 focus:ring-primary/50 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3.5 font-medium text-white transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         >
+          {isLoading && <Spinner size="sm" />}
           {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
         </motion.button>
       </motion.form>

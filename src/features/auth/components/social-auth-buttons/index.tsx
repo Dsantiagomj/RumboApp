@@ -36,8 +36,8 @@ export function SocialAuthButtons({
         type="button"
         onClick={onGoogleClick}
         disabled={isLoading}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: isLoading ? 1 : 1.02 }}
+        whileTap={{ scale: isLoading ? 1 : 0.98 }}
         className="border-input bg-input text-foreground hover:border-input/80 hover:bg-input/80 focus:ring-ring flex w-full items-center justify-center gap-3 rounded-lg border px-4 py-3 transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       >
         {/* Google Icon */}
@@ -67,8 +67,8 @@ export function SocialAuthButtons({
         type="button"
         onClick={onAppleClick}
         disabled={isLoading}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: isLoading ? 1 : 1.02 }}
+        whileTap={{ scale: isLoading ? 1 : 0.98 }}
         className="border-input bg-input text-foreground hover:border-input/80 hover:bg-input/80 focus:ring-ring flex w-full items-center justify-center gap-3 rounded-lg border px-4 py-3 transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       >
         {/* Apple Icon */}
