@@ -20,6 +20,9 @@ model User {
   image         String?
   colombianId   String? // CC, CE, Pasaporte number
   colombianIdType ColombianIdType? @default(CC)
+  dateOfBirth   DateTime? // Collected during onboarding
+  phoneNumber   String? // Collected during onboarding
+  onboardingCompletedAt DateTime? // Timestamp when onboarding was completed
   nickname      String? // For AI personalization
   role          UserRole  @default(USER)
 
