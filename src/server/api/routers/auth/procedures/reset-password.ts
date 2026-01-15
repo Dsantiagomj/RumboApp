@@ -15,13 +15,11 @@
  * - Argon2id used for password hashing
  */
 
-import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { publicProcedure } from '@/server/api/trpc';
-import { hashPassword } from '@/server/auth/argon2';
-import { sendPasswordChangedEmail } from '@/server/lib/email';
-import { invalidateUserTokens, verifyResetToken } from '@/server/lib/tokens';
+
+import { resetPassword } from './reset-password-logic';
 
 /**
  * Password validation regex
@@ -50,6 +48,11 @@ const resetPasswordSchema = z.object({
 });
 
 /**
+ * Reset password input type
+ */
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+/**
  * Reset password procedure
  *
  * @example
@@ -64,89 +67,5 @@ const resetPasswordSchema = z.object({
 export const resetPasswordProcedure = publicProcedure
   .input(resetPasswordSchema)
   .mutation(async ({ input, ctx }) => {
-    const { token, newPassword } = input;
-
-    try {
-      // Verify token exists and check expiration
-      const tokenData = await verifyResetToken(token);
-
-      if (!tokenData) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Invalid or expired reset token. Please request a new password reset.',
-        });
-      }
-
-      if (tokenData.isExpired) {
-        // Clean up expired token
-        await ctx.db.passwordResetToken.delete({
-          where: { token },
-        });
-
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Reset link has expired. Please request a new password reset.',
-        });
-      }
-
-      // Get user details
-      const user = await ctx.db.user.findUnique({
-        where: { id: tokenData.userId },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          deletedAt: true,
-        },
-      });
-
-      if (!user || user.deletedAt) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'User account not found or has been deleted.',
-        });
-      }
-
-      // Hash new password with Argon2id (OWASP 2024 compliant)
-      const hashedPassword = await hashPassword(newPassword);
-
-      // Update user password
-      await ctx.db.user.update({
-        where: { id: user.id },
-        data: {
-          password: hashedPassword,
-          updatedAt: new Date(),
-        },
-      });
-
-      // Invalidate ALL reset tokens for this user (security best practice)
-      await invalidateUserTokens(user.id);
-
-      // Send confirmation email
-      try {
-        await sendPasswordChangedEmail(user.email, user.name ?? undefined);
-      } catch (emailError) {
-        // Log email error but don't fail the password reset
-        console.error('Failed to send password changed email:', emailError);
-      }
-
-      return {
-        success: true,
-        message: 'Password has been reset successfully. You can now log in with your new password.',
-      };
-    } catch (error) {
-      // Re-throw TRPCError as-is (already formatted)
-      if (error instanceof TRPCError) {
-        throw error;
-      }
-
-      // Log unexpected errors for monitoring
-      console.error('Password reset error:', error);
-
-      // Generic error for unexpected failures
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An error occurred while resetting your password. Please try again later.',
-      });
-    }
+    return resetPassword(input.token, input.newPassword, ctx.db);
   });
