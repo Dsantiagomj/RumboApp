@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -10,6 +11,7 @@ import type { PersonalInfoFormData } from '@/features/onboarding/schemas/persona
 import { IdentityVerificationStep } from '@/features/onboarding/components/identity-verification-step';
 import { PersonalInfoStep } from '@/features/onboarding/components/personal-info-step';
 import { ProgressIndicator } from '@/features/onboarding/components/progress-indicator';
+import { trpc } from '@/lib/trpc/react';
 
 const ONBOARDING_STEPS = [
   {
@@ -29,52 +31,55 @@ const ONBOARDING_STEPS = [
  */
 export function OnboardingClient() {
   const router = useRouter();
+  const { update } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Form data storage (in production, this would be persisted)
+  // Form data storage
   const [personalInfo, setPersonalInfo] = useState<PersonalInfoFormData | null>(null);
+
+  // tRPC mutations
+  const savePersonalInfo = trpc.onboarding.savePersonalInfo.useMutation();
+  const completeIdentityVerification = trpc.onboarding.completeIdentityVerification.useMutation();
 
   // Step 1: Personal Info Handler
   const handlePersonalInfoSubmit = async (data: PersonalInfoFormData) => {
-    setIsLoading(true);
     try {
-      // TODO: Save to backend via tRPC
-      console.log('Personal info:', data);
-      setPersonalInfo(data);
+      // Save to backend
+      await savePersonalInfo.mutateAsync({
+        dateOfBirth: data.dateOfBirth.toISOString(),
+        phoneNumber: data.phoneNumber,
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Store for display
+      setPersonalInfo(data);
 
       // Move to next step
       setCurrentStep(1);
     } catch (error) {
       console.error('Failed to save personal info:', error);
-      // TODO: Show error toast
-    } finally {
-      setIsLoading(false);
+      // Error is handled by tRPC error boundary
     }
   };
 
   // Step 2: Identity Verification Handler
   const handleIdentityVerificationSubmit = async (data: IdentityVerificationFormData) => {
-    setIsLoading(true);
     try {
-      // TODO: Save to backend via tRPC
-      console.log('Identity verification:', data);
-      console.log('Complete onboarding data:', { ...personalInfo, ...data });
+      // Complete onboarding
+      const result = await completeIdentityVerification.mutateAsync({
+        documentType: data.documentType,
+        documentNumber: data.documentNumber,
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Update session with onboarding completion timestamp
+      await update({
+        onboardingCompletedAt: result.onboardingCompletedAt.toISOString(),
+      });
 
-      // TODO: Update user verification status in backend
       // Redirect to dashboard
       router.push('/dashboard');
     } catch (error) {
       console.error('Failed to complete verification:', error);
-      // TODO: Show error toast
-    } finally {
-      setIsLoading(false);
+      // Error is handled by tRPC error boundary
     }
   };
 
@@ -98,7 +103,7 @@ export function OnboardingClient() {
               <PersonalInfoStep
                 key="personal-info"
                 onSubmit={handlePersonalInfoSubmit}
-                isLoading={isLoading}
+                isLoading={savePersonalInfo.isPending}
                 defaultValues={personalInfo || undefined}
               />
             )}
@@ -108,20 +113,10 @@ export function OnboardingClient() {
                 key="identity"
                 onSubmit={handleIdentityVerificationSubmit}
                 onBack={handleBack}
-                isLoading={isLoading}
+                isLoading={completeIdentityVerification.isPending}
               />
             )}
           </AnimatePresence>
-        </div>
-
-        {/* Skip Link (Optional) */}
-        <div className="text-center">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="text-muted-foreground hover:text-foreground cursor-pointer text-sm transition-colors"
-          >
-            Completar más tarde →
-          </button>
         </div>
       </div>
     </div>

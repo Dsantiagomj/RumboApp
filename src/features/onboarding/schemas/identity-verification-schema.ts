@@ -7,9 +7,9 @@
 import { z } from 'zod';
 
 /**
- * Colombian ID types
+ * Colombian ID types (must match Prisma ColombianIdType enum)
  */
-export const documentTypes = ['CC', 'CE', 'Passport'] as const;
+export const documentTypes = ['CC', 'CE', 'PASAPORTE'] as const;
 
 /**
  * Identity verification validation schema
@@ -38,5 +38,5 @@ export type IdentityVerificationFormData = z.infer<typeof identityVerificationSc
 export const documentTypeLabels: Record<(typeof documentTypes)[number], string> = {
   CC: 'Cédula de Ciudadanía',
   CE: 'Cédula de Extranjería',
-  Passport: 'Pasaporte',
+  PASAPORTE: 'Pasaporte',
 };
