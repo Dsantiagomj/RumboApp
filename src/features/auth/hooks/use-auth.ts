@@ -10,7 +10,9 @@
  * - TypeScript inference
  */
 
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { trpc } from '@/lib/trpc/react';
 
@@ -52,7 +54,7 @@ export function useRegister() {
 /**
  * Login hook
  *
- * Handles user login with automatic redirect to dashboard
+ * Handles user login with NextAuth and automatic redirect
  *
  * @example
  * ```tsx
@@ -65,18 +67,45 @@ export function useRegister() {
  */
 export function useLogin() {
   const router = useRouter();
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  return trpc.auth.login.useMutation({
-    onSuccess: () => {
+  const mutate = async (data: LoginFormData) => {
+    setIsPending(true);
+    setError(null);
+
+    try {
+      // Use NextAuth signIn with credentials provider
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        throw new Error('Credenciales inválidas');
+      }
+
       // TODO: Show success toast
-      // Redirect to dashboard
+      // Middleware will handle redirect to /onboarding or /dashboard
       router.push('/dashboard');
-    },
-    onError: (error) => {
+      router.refresh();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Error al iniciar sesión');
+      setError(error);
       // TODO: Show error toast
       console.error('Login failed:', error.message);
-    },
-  });
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return {
+    mutate,
+    isPending,
+    error,
+    isError: !!error,
+  };
 }
 
 /**
