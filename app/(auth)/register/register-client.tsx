@@ -26,6 +26,7 @@ export function RegisterClient() {
       onGoogleClick={handleGoogleClick}
       onAppleClick={handleAppleClick}
       isLoading={registerMutation.isPending}
+      error={registerMutation.isError ? registerMutation.error.message : null}
     />
   );
 }

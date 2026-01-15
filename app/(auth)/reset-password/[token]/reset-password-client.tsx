@@ -19,6 +19,7 @@ export function PasswordResetClient({ token }: { token: string }) {
       }
       isLoading={resetPasswordMutation.isPending}
       isSuccess={resetPasswordMutation.isSuccess}
+      error={resetPasswordMutation.isError ? resetPasswordMutation.error.message : null}
     />
   );
 }

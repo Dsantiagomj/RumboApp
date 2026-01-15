@@ -14,6 +14,7 @@ export function PasswordResetRequestClient() {
       onSubmit={(data) => requestResetMutation.mutate(data)}
       isLoading={requestResetMutation.isPending}
       isSuccess={requestResetMutation.isSuccess}
+      error={requestResetMutation.isError ? requestResetMutation.error.message : null}
     />
   );
 }

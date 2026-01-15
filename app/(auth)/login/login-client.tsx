@@ -26,6 +26,7 @@ export function LoginClient() {
       onGoogleClick={handleGoogleClick}
       onAppleClick={handleAppleClick}
       isLoading={loginMutation.isPending}
+      error={loginMutation.error?.message}
     />
   );
 }

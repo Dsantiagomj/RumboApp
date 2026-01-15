@@ -34,6 +34,11 @@ export interface RegisterFormProps {
    * Loading state
    */
   isLoading?: boolean;
+
+  /**
+   * Error message to display
+   */
+  error?: string | null;
 }
 
 /**
@@ -59,6 +64,7 @@ export function RegisterForm({
   onGoogleClick,
   onAppleClick,
   isLoading = false,
+  error = null,
 }: RegisterFormProps) {
   const {
     register,
@@ -113,6 +119,17 @@ export function RegisterForm({
           </Link>
         </motion.p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-destructive/10 text-destructive border-destructive/20 rounded-lg border p-3 text-sm"
+        >
+          {error}
+        </motion.div>
+      )}
 
       {/* Form */}
       <motion.form

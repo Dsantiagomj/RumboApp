@@ -26,6 +26,11 @@ export interface PasswordResetFormProps {
    * Success state (password reset)
    */
   isSuccess?: boolean;
+
+  /**
+   * Error message to display
+   */
+  error?: string | null;
 }
 
 /**
@@ -49,6 +54,7 @@ export function PasswordResetForm({
   onSubmit,
   isLoading = false,
   isSuccess = false,
+  error = null,
 }: PasswordResetFormProps) {
   const {
     register,
@@ -94,6 +100,17 @@ export function PasswordResetForm({
           {isSuccess ? 'Tu contraseña ha sido restablecida' : 'Ingresa tu nueva contraseña'}
         </motion.p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-destructive/10 text-destructive border-destructive/20 rounded-lg border p-3 text-sm"
+        >
+          {error}
+        </motion.div>
+      )}
 
       {isSuccess ? (
         /* Success Message */
