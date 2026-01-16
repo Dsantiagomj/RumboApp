@@ -9,6 +9,7 @@ import { createTRPCRouter, publicProcedure } from '@/server/api/trpc';
 import { authRouter } from '@/server/api/routers/auth';
 import { onboardingRouter } from '@/server/api/routers/onboarding';
 import { userRouter } from '@/server/api/routers/user';
+import { accountRouter } from '@/server/api/routers/account';
 
 /**
  * App Router
@@ -18,12 +19,12 @@ import { userRouter } from '@/server/api/routers/user';
  * - authRouter: Authentication (register, login, logout)
  * - onboardingRouter: Onboarding flow (personal info, identity verification)
  * - userRouter: User management
+ * - accountRouter: Financial account management
  *
  * Future routers:
  * - transactionRouter
  * - budgetRouter
  * - billRouter
- * - accountRouter
  * - aiRouter
  */
 export const appRouter = createTRPCRouter({
@@ -47,12 +48,12 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   onboarding: onboardingRouter,
   user: userRouter,
+  account: accountRouter,
 
   // Future routers will be added here:
   // transaction: transactionRouter,
   // budget: budgetRouter,
   // bill: billRouter,
-  // account: accountRouter,
   // ai: aiRouter,
 });
 
