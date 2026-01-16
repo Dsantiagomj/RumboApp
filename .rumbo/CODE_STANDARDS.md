@@ -372,6 +372,46 @@ button/
 └── button.test.tsx        # Vitest tests
 ```
 
+**⚠️ EXCEPTION: Shadcn/ui Components (`src/components/ui/`)**
+
+The `src/components/ui/` directory is the **Shadcn/ui installation folder**. Components here are installed via `npx shadcn@latest add <component>` and should remain in their original structure (single-file `.tsx` format).
+
+**Rules for Shadcn/ui:**
+- ✅ Keep as single files (e.g., `button.tsx`, `input.tsx`)
+- ✅ Do NOT refactor to folder structure
+- ✅ Do NOT modify Shadcn components directly
+- ✅ Install via CLI: `npx shadcn@latest add button`
+
+**For customization or feature additions:**
+- ❌ DO NOT modify `src/components/ui/button.tsx` directly
+- ✅ Create a wrapper component in `src/components/common/` or `src/features/*/components/`
+- ✅ Wrapper components MUST follow folder structure
+
+**Example:**
+```
+src/components/ui/
+├── button.tsx           ✅ Shadcn (keep as-is)
+└── input.tsx            ✅ Shadcn (keep as-is)
+
+src/components/common/
+└── submit-button/       ✅ Custom wrapper (folder structure)
+    ├── index.tsx        # Wraps ui/button with custom logic
+    ├── types.ts
+    └── submit-button.test.tsx
+
+src/features/transactions/components/
+└── transaction-action-button/  ✅ Feature-specific wrapper
+    ├── index.tsx        # Wraps ui/button with transaction logic
+    ├── types.ts
+    └── transaction-action-button.test.tsx
+```
+
+**Why this exception?**
+- Shadcn/ui is a "copy-paste" library, not a node_module dependency
+- CLI installation expects single-file format
+- Updates via CLI would break if we refactor to folders
+- Our folder structure rule applies to OUR components, not third-party code
+
 ### Component File Structure (index.tsx)
 
 ```typescript

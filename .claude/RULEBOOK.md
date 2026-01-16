@@ -224,6 +224,14 @@ import { useTransactions } from '@/features/transactions/hooks/use-transactions'
 import { Button } from '../../../components/ui/button';
 ```
 
+**⚠️ EXCEPTION: Shadcn/ui Components**
+
+`src/components/ui/` is the Shadcn/ui installation folder:
+- ✅ Keep as single files (installed via `npx shadcn@latest add`)
+- ❌ DO NOT refactor to folder structure
+- ❌ DO NOT modify directly
+- ✅ For customization: Create wrappers in `src/components/common/` or `src/features/*/components/`
+
 **Full details:** [.rumbo/CODE_STANDARDS.md](../.rumbo/CODE_STANDARDS.md)
 
 ---

@@ -6,8 +6,8 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  // Enable Partial Prerendering (Cache Components)
-  cacheComponents: true,
+  // Disabled: cacheComponents conflicts with framer-motion's Math.random() usage during prerender
+  // cacheComponents: true,
   // TypedRoutes for type-safe routing
   typedRoutes: true,
 

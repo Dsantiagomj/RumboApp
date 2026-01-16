@@ -1,5 +1,5 @@
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import type { NextAuthConfig, User } from 'next-auth';
+import type { NextAuthConfig } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { z } from 'zod';
@@ -64,6 +64,7 @@ export const authConfig = {
             image: true,
             role: true,
             emailVerified: true,
+            onboardingCompletedAt: true,
           },
         });
 
@@ -78,6 +79,7 @@ export const authConfig = {
         }
 
         // Return user object (password excluded)
+        // Include onboardingCompletedAt for JWT callback (will be serialized to string)
         return {
           id: user.id,
           email: user.email,
@@ -85,7 +87,8 @@ export const authConfig = {
           image: user.image,
           role: user.role,
           emailVerified: user.emailVerified,
-        } as User;
+          onboardingCompletedAt: user.onboardingCompletedAt,
+        };
       },
     }),
 
@@ -104,12 +107,25 @@ export const authConfig = {
       if (user) {
         token.id = user.id ?? '';
         token.role = user.role;
+        // Store onboarding status in token (cast to any to access db field)
+        const userWithOnboarding = user as typeof user & {
+          onboardingCompletedAt?: Date | null;
+        };
+        token.onboardingCompletedAt =
+          userWithOnboarding.onboardingCompletedAt?.toISOString() ?? null;
       }
 
       // Update token when session is updated
       if (trigger === 'update' && session) {
         token.name = session.name;
         token.email = session.email;
+        // Update onboarding status if changed
+        const sessionWithOnboarding = session as typeof session & {
+          onboardingCompletedAt?: string | null;
+        };
+        if (sessionWithOnboarding.onboardingCompletedAt !== undefined) {
+          token.onboardingCompletedAt = sessionWithOnboarding.onboardingCompletedAt;
+        }
       }
 
       return token;
@@ -120,6 +136,7 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as 'USER' | 'ADMIN';
+        session.user.onboardingCompletedAt = token.onboardingCompletedAt as string | null;
       }
       return session;
     },
