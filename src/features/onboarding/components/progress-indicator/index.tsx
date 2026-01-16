@@ -92,16 +92,16 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
 
       {/* Desktop: Steps with circles */}
       <div className="mb-12 hidden sm:block">
-        <div className="mx-auto flex max-w-fit items-start justify-center gap-6">
+        <div className="mx-auto flex max-w-fit items-center justify-center gap-3">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
             const isUpcoming = index > currentStep;
 
             return (
-              <div key={step.id} className="flex items-center gap-3">
-                {/* Step Circle and Label Container */}
-                <div className="flex min-w-0 items-center gap-3">
+              <>
+                {/* Step Container */}
+                <div key={step.id} className="flex items-center gap-3">
                   <motion.div
                     className={cn(
                       'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors',
@@ -130,7 +130,7 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
                   {/* Step Label - Inline with circle */}
                   <div className="flex min-w-0 flex-col">
                     <span
-                      className={cn('truncate text-sm font-medium', {
+                      className={cn('text-sm font-medium whitespace-nowrap', {
                         'text-foreground': isCurrent,
                         'text-muted-foreground': !isCurrent,
                       })}
@@ -138,16 +138,16 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
                       {step.label}
                     </span>
                     {step.description && (
-                      <span className="text-muted-foreground truncate text-xs">
+                      <span className="text-muted-foreground text-xs whitespace-nowrap">
                         {step.description}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Connector Line */}
+                {/* Connector Line - Separate from step container */}
                 {index < steps.length - 1 && (
-                  <div className="relative h-0.5 w-full max-w-[120px] flex-shrink-0">
+                  <div key={`connector-${index}`} className="relative h-0.5 w-24 flex-shrink-0">
                     <div className="bg-border absolute inset-0" />
                     <motion.div
                       className="bg-primary absolute inset-0 origin-left"
@@ -159,7 +159,7 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
                     />
                   </div>
                 )}
-              </div>
+              </>
             );
           })}
         </div>
