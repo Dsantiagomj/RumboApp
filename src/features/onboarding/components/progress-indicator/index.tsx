@@ -84,20 +84,20 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
       </div>
 
       {/* Desktop: Steps with circles */}
-      <div className="hidden pb-16 sm:block">
-        <div className="flex items-center justify-between">
+      <div className="mb-12 hidden sm:block">
+        <div className="flex items-start justify-between gap-4">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
             const isUpcoming = index > currentStep;
 
             return (
-              <div key={step.id} className="flex flex-1 items-center">
-                {/* Step Circle */}
-                <div className="relative flex flex-col items-center">
+              <div key={step.id} className="flex flex-1 items-center gap-3">
+                {/* Step Circle and Label Container */}
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <motion.div
                     className={cn(
-                      'flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors',
+                      'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors',
                       {
                         'border-primary bg-primary text-white': isCompleted || isCurrent,
                         'border-border bg-background text-muted-foreground': isUpcoming,
@@ -120,10 +120,10 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
                     )}
                   </motion.div>
 
-                  {/* Step Label (mobile: hidden, desktop: shown) */}
-                  <div className="absolute top-12 hidden flex-col items-center sm:flex">
+                  {/* Step Label - Inline with circle */}
+                  <div className="flex min-w-0 flex-col">
                     <span
-                      className={cn('text-sm font-medium', {
+                      className={cn('truncate text-sm font-medium', {
                         'text-foreground': isCurrent,
                         'text-muted-foreground': !isCurrent,
                       })}
@@ -131,14 +131,16 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
                       {step.label}
                     </span>
                     {step.description && (
-                      <span className="text-muted-foreground text-xs">{step.description}</span>
+                      <span className="text-muted-foreground truncate text-xs">
+                        {step.description}
+                      </span>
                     )}
                   </div>
                 </div>
 
                 {/* Connector Line */}
                 {index < steps.length - 1 && (
-                  <div className="relative mx-2 h-0.5 flex-1">
+                  <div className="relative mt-5 h-0.5 w-full max-w-[120px] flex-shrink-0">
                     <div className="bg-border absolute inset-0" />
                     <motion.div
                       className="bg-primary absolute inset-0 origin-left"
