@@ -43,24 +43,24 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
 
     return (
       <div className="w-full">
-        <label className="flex cursor-pointer items-start gap-3">
-          {/* Hidden native checkbox */}
-          <input
-            ref={ref}
-            type="checkbox"
-            {...props}
-            className="peer sr-only"
-            aria-invalid={hasError}
-            aria-describedby={error ? `${props.id || props.name}-error` : undefined}
-          />
-
-          {/* Custom checkbox */}
+        <div className="flex items-start gap-3">
+          {/* Checkbox wrapper with proper focus and keyboard handling */}
           <div className="relative mt-0.5 flex-shrink-0">
+            <input
+              ref={ref}
+              type="checkbox"
+              {...props}
+              className="peer absolute h-5 w-5 cursor-pointer opacity-0"
+              aria-invalid={hasError}
+              aria-describedby={error ? `${props.id || props.name}-error` : undefined}
+            />
+
+            {/* Custom checkbox visual */}
             <motion.div
-              className={`flex h-5 w-5 items-center justify-center rounded border transition-colors peer-focus:ring-2 peer-focus:ring-offset-2 ${
+              className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded border transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 ${
                 hasError
-                  ? 'border-destructive bg-input peer-checked:border-destructive peer-checked:bg-destructive peer-focus:ring-destructive'
-                  : 'border-input bg-input peer-checked:border-primary peer-checked:bg-primary peer-focus:ring-primary'
+                  ? 'border-destructive bg-input peer-checked:border-destructive peer-checked:bg-destructive peer-focus-visible:ring-destructive'
+                  : 'border-input bg-input peer-checked:border-primary peer-checked:bg-primary peer-focus-visible:ring-primary'
               }`}
               whileTap={{ scale: 0.95 }}
             >
@@ -79,8 +79,10 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
           </div>
 
           {/* Label */}
-          <span className="text-foreground text-sm">{label}</span>
-        </label>
+          <label htmlFor={props.id} className="text-foreground cursor-pointer text-sm">
+            {label}
+          </label>
+        </div>
 
         {/* Error Message */}
         {hasError && (

@@ -197,7 +197,7 @@ export function IdentityVerificationStep({
               disabled={isLoading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="border-border hover:bg-accent flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-4 font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50"
+              className="border-border hover:bg-accent flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 py-4 font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ArrowLeft className="h-4 w-4" />
               Atrás
@@ -213,7 +213,7 @@ export function IdentityVerificationStep({
               boxShadow: isLoading ? undefined : '0 10px 40px rgba(139, 92, 246, 0.3)',
             }}
             whileTap={{ scale: isLoading ? 1 : 0.98 }}
-            className="group from-primary relative flex-[2] overflow-hidden rounded-xl bg-gradient-to-r to-purple-600 px-6 py-4 font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+            className="group from-primary relative flex-[2] cursor-pointer overflow-hidden rounded-xl bg-gradient-to-r to-purple-600 px-6 py-4 font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
           >
             {/* Shimmer effect */}
             <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />

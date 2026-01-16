@@ -56,7 +56,7 @@ export function SuccessStep({ userName, onContinue }: SuccessStepProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          {userName ? `¡Todo listo, ${userName}!` : '¡Todo listo!'} 🎉
+          {userName ? `¡Todo listo, ${userName}!` : '¡Todo listo!'}
         </motion.h1>
         <motion.p
           className="text-muted-foreground mx-auto max-w-md text-base leading-relaxed sm:text-lg"
@@ -122,7 +122,7 @@ export function SuccessStep({ userName, onContinue }: SuccessStepProps) {
           boxShadow: '0 10px 40px rgba(16, 185, 129, 0.3)',
         }}
         whileTap={{ scale: 0.98 }}
-        className="group relative mx-auto w-full max-w-md overflow-hidden rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:shadow-xl"
+        className="group relative mx-auto w-full max-w-md cursor-pointer overflow-hidden rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:shadow-xl"
       >
         {/* Shimmer effect */}
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />

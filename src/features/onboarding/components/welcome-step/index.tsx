@@ -46,7 +46,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          ¡Bienvenido a Rumbo! 🇨🇴
+          ¡Bienvenido a Rumbo!
         </motion.h1>
         <motion.p
           className="text-muted-foreground mx-auto max-w-md text-base leading-relaxed sm:text-lg"
@@ -97,7 +97,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
           boxShadow: '0 10px 40px rgba(139, 92, 246, 0.3)',
         }}
         whileTap={{ scale: 0.98 }}
-        className="group from-primary relative mx-auto w-full max-w-md overflow-hidden rounded-xl bg-gradient-to-r to-purple-600 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:shadow-xl"
+        className="group from-primary relative mx-auto w-full max-w-md cursor-pointer overflow-hidden rounded-xl bg-gradient-to-r to-purple-600 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:shadow-xl"
       >
         {/* Shimmer effect */}
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />

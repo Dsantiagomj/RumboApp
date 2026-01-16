@@ -168,12 +168,20 @@ export function LoginForm({
         <motion.button
           type="submit"
           disabled={isLoading}
-          whileHover={{ scale: isLoading ? 1 : 1.02 }}
+          whileHover={{
+            scale: isLoading ? 1 : 1.02,
+            boxShadow: isLoading ? undefined : '0 10px 40px rgba(139, 92, 246, 0.3)',
+          }}
           whileTap={{ scale: isLoading ? 1 : 0.98 }}
-          className="bg-primary hover:bg-primary/90 focus:ring-primary/50 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-3.5 font-medium text-white transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+          className="group from-primary focus:ring-primary/50 relative w-full cursor-pointer overflow-hidden rounded-xl bg-gradient-to-r to-purple-600 px-4 py-3.5 font-semibold text-white shadow-lg transition-all hover:shadow-xl focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
-          {isLoading && <Spinner size="sm" />}
-          {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+          {/* Shimmer effect */}
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+
+          <span className="relative flex items-center justify-center gap-2">
+            {isLoading && <Spinner size="sm" className="text-white" />}
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+          </span>
         </motion.button>
       </motion.form>
 
