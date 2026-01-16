@@ -14,12 +14,9 @@ import { useState } from 'react';
 
 import { Spinner } from '@/components/ui/spinner';
 
+import { DocumentTypeSelector } from '../document-type-selector';
 import type { IdentityVerificationFormData } from '../../schemas/identity-verification-schema';
-import {
-  documentTypeLabels,
-  documentTypes,
-  identityVerificationSchema,
-} from '../../schemas/identity-verification-schema';
+import { identityVerificationSchema } from '../../schemas/identity-verification-schema';
 
 export interface IdentityVerificationStepProps {
   onSubmit: (data: IdentityVerificationFormData) => void;
@@ -50,6 +47,7 @@ export function IdentityVerificationStep({
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm<IdentityVerificationFormData>({
     resolver: zodResolver(identityVerificationSchema),
@@ -58,6 +56,7 @@ export function IdentityVerificationStep({
   });
 
   const [showDetails, setShowDetails] = useState(false);
+  const documentType = watch('documentType');
   const documentNumber = watch('documentNumber');
 
   return (
@@ -125,29 +124,26 @@ export function IdentityVerificationStep({
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Document Type */}
+        {/* Document Type Selector */}
         <div className="w-full">
-          <label htmlFor="documentType" className="text-foreground mb-2 block text-sm font-medium">
+          <label className="text-foreground mb-3 block text-sm font-medium">
             Tipo de Documento
             <span className="text-destructive ml-1">*</span>
           </label>
-          <select
-            {...register('documentType')}
-            id="documentType"
+          <DocumentTypeSelector
+            value={documentType}
+            onChange={(type) => setValue('documentType', type, { shouldValidate: true })}
             disabled={isLoading}
-            className="bg-input text-foreground border-input focus:border-primary focus:ring-primary/20 w-full rounded-lg border px-4 py-3.5 transition-all focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="">Selecciona un tipo</option>
-            {documentTypes.map((type) => (
-              <option key={type} value={type}>
-                {documentTypeLabels[type]}
-              </option>
-            ))}
-          </select>
+          />
           {errors.documentType && (
-            <p className="text-destructive mt-2 text-sm" role="alert">
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-destructive mt-2 text-sm"
+              role="alert"
+            >
               {errors.documentType.message}
-            </p>
+            </motion.p>
           )}
         </div>
 
