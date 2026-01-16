@@ -111,7 +111,7 @@ export function OnboardingClient() {
         )}
 
         {/* Step Content */}
-        <div className="bg-card rounded-lg border p-6 shadow-sm sm:p-8">
+        <div className="w-full p-6 sm:p-8">
           <AnimatePresence mode="wait">
             {/* Welcome Screen */}
             {currentStep === 0 && <WelcomeStep key="welcome" onStart={handleWelcomeStart} />}

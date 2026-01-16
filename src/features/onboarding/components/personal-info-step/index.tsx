@@ -8,7 +8,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Calendar, MessageCircle, ArrowRight } from 'lucide-react';
+import { User, Calendar, MessageCircle, ArrowRight, CheckCircle, Globe } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useState, useEffect } from 'react';
 
@@ -126,10 +126,10 @@ export function PersonalInfoStep({
                 exit={{ opacity: 0, height: 0 }}
                 className="bg-primary/10 border-primary/20 mt-3 flex items-center gap-2 rounded-lg border px-3 py-2.5"
               >
-                <span className="text-xl">🎂</span>
+                <CheckCircle className="text-primary h-4 w-4" />
                 <span className="text-primary text-sm">
                   {isBirthdayMonth
-                    ? '¡Cumpleaños este mes! 🎉 Cumples requisitos de edad'
+                    ? '¡Cumpleaños este mes! Cumples requisitos de edad'
                     : '¡Perfecto! Cumples con los requisitos de edad'}
                 </span>
               </motion.div>
@@ -147,7 +147,7 @@ export function PersonalInfoStep({
           <div className="relative">
             {/* Country Code Prefix */}
             <div className="absolute top-1/2 left-4 z-10 flex -translate-y-1/2 items-center gap-2">
-              <span className="text-sm">🇨🇴</span>
+              <Globe className="text-muted-foreground h-4 w-4" />
               <span className="text-foreground text-sm font-medium">+57</span>
               <div className="bg-border h-5 w-px" />
             </div>
