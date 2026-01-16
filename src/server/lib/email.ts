@@ -12,8 +12,20 @@
 
 import { Resend } from 'resend';
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-initialize Resend client (only when actually sending emails)
+// This prevents build-time errors when RESEND_API_KEY is not set
+let resend: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
+    resend = new Resend(apiKey);
+  }
+  return resend;
+}
 
 /**
  * Email configuration
@@ -140,7 +152,8 @@ Si tienes problemas, contáctanos en soporte@rumbo.app
   `.trim();
 
   try {
-    await resend.emails.send({
+    const client = getResendClient();
+    await client.emails.send({
       from: EMAIL_CONFIG.from,
       to: email,
       subject: `Restablecer contraseña - ${EMAIL_CONFIG.appName}`,
@@ -252,7 +265,8 @@ Si tienes problemas, contáctanos en soporte@rumbo.app
   `.trim();
 
   try {
-    await resend.emails.send({
+    const client = getResendClient();
+    await client.emails.send({
       from: EMAIL_CONFIG.from,
       to: email,
       subject: `Contraseña actualizada - ${EMAIL_CONFIG.appName}`,
