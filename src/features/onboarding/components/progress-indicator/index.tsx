@@ -101,7 +101,7 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
             return (
               <div key={step.id} className="flex items-center gap-3">
                 {/* Step Circle and Label Container */}
-                <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <motion.div
                     className={cn(
                       'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors',
@@ -147,7 +147,7 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
 
                 {/* Connector Line */}
                 {index < steps.length - 1 && (
-                  <div className="relative mt-5 h-0.5 w-full max-w-[120px] flex-shrink-0">
+                  <div className="relative h-0.5 w-full max-w-[120px] flex-shrink-0">
                     <div className="bg-border absolute inset-0" />
                     <motion.div
                       className="bg-primary absolute inset-0 origin-left"
