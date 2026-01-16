@@ -84,7 +84,7 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
       </div>
 
       {/* Desktop: Steps with circles */}
-      <div className="hidden sm:block">
+      <div className="hidden pb-16 sm:block">
         <div className="flex items-center justify-between">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
