@@ -39,7 +39,14 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
   const percentage = Math.round(((currentStep + 1) / steps.length) * 100);
 
   return (
-    <div className={cn('w-full', className)}>
+    <div
+      className={cn('w-full', className)}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={steps.length}
+      aria-valuenow={currentStep + 1}
+      aria-label={`Paso ${currentStep + 1} de ${steps.length}: ${steps[currentStep]?.label}`}
+    >
       {/* Progress Header with Percentage */}
       <div className="mb-4 flex items-center justify-between">
         <span className="text-muted-foreground text-sm font-medium">
@@ -85,14 +92,14 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
 
       {/* Desktop: Steps with circles */}
       <div className="mb-12 hidden sm:block">
-        <div className="flex items-start justify-center gap-6">
+        <div className="mx-auto flex max-w-fit items-start justify-center gap-6">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
             const isUpcoming = index > currentStep;
 
             return (
-              <div key={step.id} className="flex flex-1 items-center gap-3">
+              <div key={step.id} className="flex items-center gap-3">
                 {/* Step Circle and Label Container */}
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <motion.div

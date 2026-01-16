@@ -72,14 +72,11 @@ export function PersonalInfoStep({
     >
       {/* Enhanced Header with Icon */}
       <div className="flex items-start gap-4">
-        <motion.div
-          className="bg-primary/10 rounded-2xl p-3"
-          whileHover={{ scale: 1.05, rotate: 5 }}
-        >
+        <motion.div className="bg-primary/10 rounded-2xl p-3" whileHover={{ scale: 1.03 }}>
           <User className="text-primary h-6 w-6" />
         </motion.div>
         <div className="flex-1 space-y-1">
-          <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
             Información Personal
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base">

@@ -8,7 +8,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, ChevronDown, ArrowLeft, FileText } from 'lucide-react';
+import { ShieldCheck, ChevronDown, ArrowLeft, FileText, Lightbulb } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
@@ -69,14 +69,11 @@ export function IdentityVerificationStep({
     >
       {/* Enhanced Header with Icon */}
       <div className="flex items-start gap-4">
-        <motion.div
-          className="bg-primary/10 rounded-2xl p-3"
-          whileHover={{ scale: 1.05, rotate: 5 }}
-        >
+        <motion.div className="bg-primary/10 rounded-2xl p-3" whileHover={{ scale: 1.03 }}>
           <ShieldCheck className="text-primary h-6 w-6" />
         </motion.div>
         <div className="flex-1 space-y-1">
-          <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
             Confirmemos que eres tú
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base">Último paso, lo prometo</p>
@@ -91,13 +88,15 @@ export function IdentityVerificationStep({
           className="flex w-full items-center justify-between text-left"
         >
           <div className="flex items-center gap-3">
-            <span className="text-xl">💡</span>
+            <div className="bg-primary/10 rounded-lg p-1.5">
+              <Lightbulb className="text-primary h-4 w-4" />
+            </div>
             <span className="text-foreground text-sm font-medium">
               ¿Por qué necesitamos verificar tu identidad?
             </span>
           </div>
           <ChevronDown
-            className={`text-primary h-4 w-4 transition-transform ${
+            className={`text-primary h-4 w-4 transition-transform duration-200 ${
               showDetails ? 'rotate-180' : ''
             }`}
           />
