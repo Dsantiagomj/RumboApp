@@ -1,0 +1,19 @@
+# Browsers that we support
+
+# Modern browsers
+>0.5%
+last 2 versions
+not dead
+
+# Safari support (macOS and iOS)
+Safari >= 13
+iOS >= 13
+
+# Explicitly support recent Safari versions
+last 2 Safari major versions
+last 2 iOS major versions
+
+# Chrome, Firefox, Edge
+last 2 Chrome major versions
+last 2 Firefox major versions
+last 2 Edge major versions

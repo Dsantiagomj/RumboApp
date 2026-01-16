@@ -5,8 +5,8 @@ import 'next-auth/jwt';
 /**
  * Extend NextAuth types to include custom fields
  *
- * This adds the `role` field to the User and Session types
- * so we can access user role throughout the application
+ * This adds the `role` and `onboardingCompletedAt` fields to the User and Session types
+ * so we can access user role and onboarding status throughout the application
  */
 
 declare module 'next-auth' {
@@ -21,6 +21,7 @@ declare module 'next-auth' {
       name?: string | null;
       image?: string | null;
       role: UserRole;
+      onboardingCompletedAt?: string | null;
     };
   }
 }
@@ -29,5 +30,6 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     role: UserRole;
+    onboardingCompletedAt?: string | null;
   }
 }
