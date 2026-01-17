@@ -123,8 +123,15 @@ export function ImportWizard() {
             try {
               pngImages = await convertPDFWithPassword(base64PDF);
             } catch (error) {
-              // Check if it's a password error
-              if (error instanceof Error && error.message.includes('protegido con contraseña')) {
+              // Check if it's a password error (PasswordException or password-related message)
+              const isPasswordError =
+                error instanceof Error &&
+                (error.message.includes('protegido con contraseña') ||
+                  error.message.includes('password') ||
+                  error.message.includes('Password') ||
+                  error.message.includes('encrypted'));
+
+              if (isPasswordError) {
                 // Try with user's Colombian ID if available
                 if (userProfile?.colombianId) {
                   toast.info('Intentando con tu cédula...');
@@ -140,6 +147,7 @@ export function ImportWizard() {
                   }
                 } else {
                   // No Colombian ID, show password modal immediately
+                  toast.info('Este PDF está protegido. Ingresa la contraseña.');
                   setShowPasswordModal(true);
                   setIsUploading(false);
                   return;
@@ -152,7 +160,11 @@ export function ImportWizard() {
           }
         } catch (error) {
           // Check if it's an incorrect password error
-          if (error instanceof Error && error.message.includes('Contraseña incorrecta')) {
+          if (
+            error instanceof Error &&
+            (error.message.includes('Contraseña incorrecta') ||
+              error.message.includes('no se pudo desencriptar'))
+          ) {
             toast.error('Contraseña incorrecta. Inténtalo de nuevo.');
             setShowPasswordModal(true);
             setIsUploading(false);
