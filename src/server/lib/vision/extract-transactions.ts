@@ -257,8 +257,21 @@ Return valid JSON only.`,
       throw new Error('La respuesta de Vision API no es JSON válido');
     }
 
+    // Log what we actually got from Vision API
+    console.error('[Vision API] Parsed result:', {
+      hasAccounts: !!result.accounts,
+      accountsLength: Array.isArray(result.accounts) ? result.accounts.length : 'not an array',
+      hasTransactions: !!result.transactions,
+      transactionsLength: Array.isArray(result.transactions)
+        ? result.transactions.length
+        : 'not an array',
+      resultKeys: Object.keys(result),
+      firstFewKeys: JSON.stringify(result).substring(0, 300),
+    });
+
     // Validate result structure
     if (!result.accounts || !result.transactions) {
+      console.error('[Vision API] Missing accounts or transactions in result:', result);
       throw new Error('Invalid response format from vision API');
     }
 
