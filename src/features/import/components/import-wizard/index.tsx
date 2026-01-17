@@ -67,23 +67,79 @@ export function ImportWizard() {
     setIsUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Check if it's a PDF file - if so, convert to PNG images first
+      if (file.name.toLowerCase().endsWith('.pdf')) {
+        toast.info('Convirtiendo PDF a imágenes...');
 
-      const response = await fetch('/api/import/upload', {
-        method: 'POST',
-        body: formData,
-      });
+        // Dynamically import PDF converter (client-side only)
+        const { convertPDFToImages } = await import('@/features/import/utils/pdf-to-image');
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Error al subir archivo');
+        // Read file as base64
+        const reader = new FileReader();
+        const base64PDF = await new Promise<string>((resolve, reject) => {
+          reader.onload = (e) => {
+            const result = e.target?.result as string;
+            const base64 = result.split(',')[1]; // Remove "data:application/pdf;base64," prefix
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        // Convert PDF to PNG images
+        const pngImages = await convertPDFToImages(base64PDF, {
+          scale: 2.0,
+          maxPages: 10,
+        });
+
+        if (pngImages.length === 0) {
+          throw new Error('No se pudieron extraer páginas del PDF');
+        }
+
+        toast.success(`PDF convertido: ${pngImages.length} páginas`);
+
+        // Send PNG images to server
+        const response = await fetch('/api/import/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileType: 'IMAGE',
+            images: pngImages.map((img) => img.imageData),
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Error al subir archivo');
+        }
+
+        const result = await response.json();
+        setJobId(result.jobId);
+        setCurrentStep('processing');
+        toast.success('Archivo subido correctamente. Procesando...');
+      } else {
+        // CSV or other files - upload normally via FormData
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/import/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Error al subir archivo');
+        }
+
+        const result = await response.json();
+        setJobId(result.jobId);
+        setCurrentStep('processing');
+        toast.success('Archivo subido correctamente. Procesando...');
       }
-
-      const result = await response.json();
-      setJobId(result.jobId);
-      setCurrentStep('processing');
-      toast.success('Archivo subido correctamente. Procesando...');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Error al subir archivo');
     } finally {

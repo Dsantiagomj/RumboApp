@@ -67,7 +67,7 @@ const WORKER_OPTIONS = {
 async function processImportJob(
   job: Job<ImportJobData, ImportJobResult>
 ): Promise<ImportJobResult> {
-  const { jobId, userId, fileUrl, fileType, hasPassword, bankFormat } = job.data;
+  const { jobId, userId, fileUrl, fileType, hasPassword, bankFormat, images } = job.data;
 
   console.log(`[ImportWorker] Processing job ${jobId} for user ${userId}`);
 
@@ -98,7 +98,7 @@ async function processImportJob(
 
     // Step 4: Parse file based on type
     await updateJobStatus(jobId, ImportJobStatus.PARSING, 40);
-    const parsedData = await parseFile(fileBuffer, fileType, jobId, bankFormat);
+    const parsedData = await parseFile(fileBuffer, fileType, jobId, bankFormat, images);
 
     // Step 5: Create ImportedAccount records
     await updateJobStatus(jobId, ImportJobStatus.PARSING, 60);
@@ -242,7 +242,8 @@ async function parseFile(
   fileBuffer: Buffer,
   fileType: string,
   jobId: string,
-  _bankFormat?: string
+  _bankFormat?: string,
+  images?: string[]
 ): Promise<{
   accounts: ParsedAccount[];
   transactions: ParsedTransaction[];
@@ -250,7 +251,76 @@ async function parseFile(
   console.log(`[ImportWorker] Parsing ${fileType} file`);
 
   if (fileType === 'IMAGE') {
-    // Use vision API for image processing
+    // Check if we have PNG images from PDF conversion
+    if (images && images.length > 0) {
+      console.log(`[ImportWorker] Processing ${images.length} PNG images from PDF conversion`);
+
+      // For multi-page PDFs converted to PNG, process the first image
+      // TODO: Implement multi-page Vision API processing
+      const firstImageBuffer = Buffer.from(images[0], 'base64');
+      const mimeType = 'image/png';
+      const visionResult = await extractTransactionsFromImage(firstImageBuffer, mimeType);
+
+      // Validate extraction quality
+      const validation = validateExtractionQuality(visionResult);
+      if (!validation.isValid) {
+        throw new Error(`Vision extraction failed validation: ${validation.errors.join(', ')}`);
+      }
+
+      // Convert vision result to ParsedAccount/ParsedTransaction format
+      const accountIdMap = new Map<string, string>();
+
+      const accounts: ParsedAccount[] = visionResult.accounts.map((account) => {
+        const accountId = randomUUID();
+        accountIdMap.set(account.name, accountId);
+
+        return {
+          name: account.name,
+          bankName: account.bankName,
+          accountNumber: account.accountNumber,
+          accountType: account.accountType,
+          initialBalance: account.initialBalance,
+          transactionCount: visionResult.transactions.length,
+          tempId: accountId,
+        };
+      });
+
+      // If no accounts detected, create a default one
+      if (accounts.length === 0 && visionResult.transactions.length > 0) {
+        const defaultAccountId = randomUUID();
+        const defaultAccount: ParsedAccount = {
+          name: 'Cuenta Importada',
+          accountType: 'OTHER',
+          initialBalance: 0,
+          transactionCount: visionResult.transactions.length,
+          tempId: defaultAccountId,
+        };
+        accounts.push(defaultAccount);
+        accountIdMap.set('default', defaultAccountId);
+      }
+
+      const transactions: ParsedTransaction[] = visionResult.transactions.map((tx) => {
+        const accountId =
+          accounts.length === 1
+            ? accountIdMap.values().next().value
+            : accountIdMap.get('default') || randomUUID();
+
+        return {
+          id: randomUUID(),
+          importedAccountId: accountId as string,
+          date: new Date(tx.date),
+          description: tx.description,
+          amount: tx.amount,
+          type: tx.type,
+          merchant: tx.merchant,
+          rawData: tx.rawData,
+        };
+      });
+
+      return { accounts, transactions };
+    }
+
+    // Use vision API for single image processing
     const mimeType = 'image/jpeg'; // Default, could be improved by detecting actual type
     const visionResult = await extractTransactionsFromImage(fileBuffer, mimeType);
 

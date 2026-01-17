@@ -27,6 +27,65 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const contentType = request.headers.get('content-type');
+
+    // Check if this is a JSON request (PDF converted to PNG images)
+    if (contentType?.includes('application/json')) {
+      const body = await request.json();
+      const { fileName, fileType, images } = body;
+
+      // Validation
+      if (!fileName || !fileType || !images || !Array.isArray(images)) {
+        return NextResponse.json({ error: 'Datos de imagen no válidos' }, { status: 400 });
+      }
+
+      if (images.length === 0) {
+        return NextResponse.json({ error: 'No se proporcionaron imágenes' }, { status: 400 });
+      }
+
+      if (images.length > 10) {
+        return NextResponse.json({ error: 'Máximo 10 páginas permitidas' }, { status: 400 });
+      }
+
+      // Convert first PNG image to buffer for storage (or store all images separately)
+      // For now, we'll store the first image and pass all images to the worker
+      const firstImageBuffer = Buffer.from(images[0], 'base64');
+
+      // Upload first image to R2 (as representative file)
+      const key = generateImportKey(session.user.id, fileName.replace('.pdf', '.png'));
+      const fileUrl = await uploadToR2(firstImageBuffer, key, 'image/png');
+
+      // Create ImportJob with IMAGE type
+      const job = await prisma.importJob.create({
+        data: {
+          userId: session.user.id,
+          fileName,
+          fileSize: images.reduce((sum: number, img: string) => sum + img.length, 0), // Approximate size
+          fileUrl,
+          fileType: 'IMAGE',
+          status: 'PENDING',
+        },
+      });
+
+      // Add job to queue with all PNG images
+      await addImportJob({
+        jobId: job.id,
+        userId: session.user.id,
+        fileUrl,
+        fileType: 'IMAGE',
+        hasPassword: false,
+        // Store all images in job data for Vision API processing
+        images: images,
+      });
+
+      return NextResponse.json({
+        jobId: job.id,
+        status: 'success',
+        message: `PDF convertido. Procesando ${images.length} páginas...`,
+      });
+    }
+
+    // Handle FormData uploads (CSV and direct image files)
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const manualPassword = formData.get('password') as string | null;
@@ -52,9 +111,21 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Determine file type
+    // Determine file type - reject PDFs since they should be converted client-side
     const isImage = file.type.startsWith('image/');
-    const fileType = isImage ? 'IMAGE' : file.type.includes('pdf') ? 'PDF' : 'CSV';
+    const isPDF = file.type.includes('pdf');
+
+    if (isPDF) {
+      return NextResponse.json(
+        {
+          error:
+            'Los archivos PDF deben ser convertidos a imágenes en el navegador. Por favor, inténtalo de nuevo.',
+        },
+        { status: 400 }
+      );
+    }
+
+    const fileType = isImage ? 'IMAGE' : 'CSV';
 
     // TEMPORARILY DISABLE password detection due to pdfjs worker issues in Node.js
     // The worker will detect password errors and handle them appropriately

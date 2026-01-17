@@ -24,12 +24,14 @@ export interface ImportJobData {
   userId: string;
   /** File URL in storage (Cloudflare R2) */
   fileUrl: string;
-  /** File type: CSV or PDF */
+  /** File type: CSV, PDF, or IMAGE */
   fileType: FileType;
   /** Whether file requires password (for encrypted PDFs) */
   hasPassword?: boolean;
   /** Bank format for parsing (optional, may be detected) */
   bankFormat?: BankFormat;
+  /** PNG images from PDF conversion (base64 encoded, for Vision API processing) */
+  images?: string[];
 }
 
 /**
