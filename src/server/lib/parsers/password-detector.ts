@@ -103,7 +103,12 @@ async function isCSVPasswordProtected(buffer: Buffer): Promise<boolean> {
 async function isPDFPasswordProtected(buffer: Buffer): Promise<boolean> {
   try {
     // Attempt to parse the PDF without a password
-    const parser = new PDFParse({ data: buffer });
+    // Disable worker for Node.js environment
+    const parser = new PDFParse({
+      data: buffer,
+      useWorkerFetch: false,
+      isEvalSupported: false,
+    });
     await parser.getText();
     // If successful, the PDF is not password-protected
     return false;
@@ -187,7 +192,13 @@ export async function decryptFile(
 async function decryptPDF(buffer: Buffer, password: string): Promise<Buffer> {
   try {
     // Parse the PDF with the provided password
-    const parser = new PDFParse({ data: buffer, password });
+    // Disable worker for Node.js environment
+    const parser = new PDFParse({
+      data: buffer,
+      password,
+      useWorkerFetch: false,
+      isEvalSupported: false,
+    });
     const data = await parser.getText();
 
     if (!data.text) {

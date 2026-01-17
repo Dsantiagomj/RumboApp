@@ -27,9 +27,12 @@ export async function parsePDF(
     const { PDFParse } = await import('pdf-parse');
 
     // Create parser with buffer and optional password
+    // Disable worker for Node.js environment
     const parser = new PDFParse({
       data: buffer,
       password: options.password,
+      useWorkerFetch: false,
+      isEvalSupported: false,
     });
 
     // Extract text
