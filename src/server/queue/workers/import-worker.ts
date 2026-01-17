@@ -1,12 +1,12 @@
 /**
  * Import Worker
  *
- * Background worker for processing file imports (CSV/PDF)
+ * Background worker for processing file imports (CSV/PDF/Images)
  * Listens to the import queue and processes jobs asynchronously
  *
  * Responsibilities:
  * 1. Download file from storage (Cloudflare R2)
- * 2. Parse file based on bank format
+ * 2. Parse file based on type (CSV/PDF/Image with Vision API)
  * 3. Extract accounts and transactions
  * 4. Create ImportedAccount and ImportedTransaction records
  * 5. Update ImportJob status throughout process
@@ -14,14 +14,20 @@
  * 7. Handle errors and retries
  */
 
+import { randomUUID } from 'crypto';
 import type { Job } from 'bullmq';
 import { Worker } from 'bullmq';
+import type { AccountType } from '@prisma/client';
 import { ImportJobStatus } from '@prisma/client';
 import { prisma } from '@/server/db';
 import { QUEUE_NAMES } from '../types';
 import type { ImportJobData, ImportJobResult } from '../types';
 import { decryptPassword } from '@/server/lib/crypto';
 import { decryptFile } from '@/server/lib/parsers/password-detector';
+import {
+  extractTransactionsFromImage,
+  validateExtractionQuality,
+} from '@/server/lib/vision/extract-transactions';
 
 /**
  * Worker Configuration
@@ -85,11 +91,23 @@ async function processImportJob(
 
     // Step 5: Create ImportedAccount records
     await updateJobStatus(jobId, ImportJobStatus.PARSING, 60);
-    const accountsCount = await createImportedAccounts(jobId, parsedData.accounts);
+    const createdAccountIds = await createImportedAccounts(jobId, parsedData.accounts);
+
+    // Build mapping from temporary IDs to real database IDs
+    const accountIdMap = new Map<string, string>();
+    parsedData.accounts.forEach((account, index) => {
+      if (account.tempId) {
+        accountIdMap.set(account.tempId, createdAccountIds[index]!);
+      }
+    });
 
     // Step 6: Create ImportedTransaction records
     await updateJobStatus(jobId, ImportJobStatus.PARSING, 80);
-    const transactionsCount = await createImportedTransactions(jobId, parsedData.transactions);
+    const transactionsCount = await createImportedTransactions(
+      jobId,
+      parsedData.transactions,
+      accountIdMap
+    );
 
     // Step 7: Queue categorization jobs
     await updateJobStatus(jobId, ImportJobStatus.CATEGORIZING, 90);
@@ -101,19 +119,19 @@ async function processImportJob(
       data: {
         status: ImportJobStatus.REVIEW,
         progress: 100,
-        accountsCount,
+        accountsCount: createdAccountIds.length,
         transactionsCount,
         completedAt: new Date(),
       },
     });
 
     console.log(
-      `[ImportWorker] Job ${jobId} completed: ${accountsCount} accounts, ${transactionsCount} transactions`
+      `[ImportWorker] Job ${jobId} completed: ${createdAccountIds.length} accounts, ${transactionsCount} transactions`
     );
 
     return {
       success: true,
-      accountsCreated: accountsCount,
+      accountsCreated: createdAccountIds.length,
       transactionsCreated: transactionsCount,
       categorizationJobsQueued,
     };
@@ -183,82 +201,179 @@ async function validateJobData(data: ImportJobData) {
 
 /**
  * Download file from storage (Cloudflare R2)
- * TODO: Implement actual download logic using R2 client
+ * Uses public R2 URL to fetch file
  */
-async function downloadFile(_fileUrl: string): Promise<Buffer> {
-  // Placeholder: In actual implementation, use R2 client to download file
-  // console.log(`[ImportWorker] Downloading file from ${fileUrl}`);
+async function downloadFile(fileUrl: string): Promise<Buffer> {
+  console.log(`[ImportWorker] Downloading file from ${fileUrl}`);
 
-  // TODO: Replace with actual R2 download
-  // import { r2Client } from '@/server/lib/r2';
-  // const response = await fetch(fileUrl);
-  // if (!response.ok) throw new Error('Failed to download file');
-  // return Buffer.from(await response.arrayBuffer());
+  const response = await fetch(fileUrl);
 
-  throw new Error('File download not implemented yet');
+  if (!response.ok) {
+    throw new Error(`Failed to download file: ${response.statusText}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
 }
 
 /**
  * Parse file based on type and bank format
- * TODO: Implement actual parsing logic
+ * Supports IMAGE (vision API), CSV, and PDF
  */
 async function parseFile(
-  _fileBuffer: Buffer,
-  _fileType: string,
+  fileBuffer: Buffer,
+  fileType: string,
   _bankFormat?: string
 ): Promise<{
   accounts: ParsedAccount[];
   transactions: ParsedTransaction[];
 }> {
-  // console.log(`[ImportWorker] Parsing ${fileType} file (${bankFormat || 'auto-detect'})`);
+  console.log(`[ImportWorker] Parsing ${fileType} file`);
 
-  // TODO: Implement actual parsing
-  // if (fileType === 'CSV') {
-  //   return parseCSV(fileBuffer, bankFormat);
-  // } else if (fileType === 'PDF') {
-  //   return parsePDF(fileBuffer, bankFormat);
-  // }
+  if (fileType === 'IMAGE') {
+    // Use vision API for image processing
+    const mimeType = 'image/jpeg'; // Default, could be improved by detecting actual type
+    const visionResult = await extractTransactionsFromImage(fileBuffer, mimeType);
 
-  throw new Error('File parsing not implemented yet');
+    // Validate extraction quality
+    const validation = validateExtractionQuality(visionResult);
+    if (!validation.isValid) {
+      throw new Error(`Vision extraction failed validation: ${validation.errors.join(', ')}`);
+    }
+
+    // Convert vision result to ParsedAccount/ParsedTransaction format
+    const accountIdMap = new Map<string, string>();
+
+    const accounts: ParsedAccount[] = visionResult.accounts.map((account) => {
+      const accountId = randomUUID();
+      accountIdMap.set(account.name, accountId);
+
+      return {
+        name: account.name,
+        bankName: account.bankName,
+        accountNumber: account.accountNumber,
+        accountType: account.accountType,
+        initialBalance: account.initialBalance,
+        transactionCount: visionResult.transactions.length,
+        tempId: accountId, // Store temp ID for mapping later
+      };
+    });
+
+    // If no accounts detected, create a default one
+    if (accounts.length === 0 && visionResult.transactions.length > 0) {
+      const defaultAccountId = randomUUID();
+      const defaultAccount: ParsedAccount = {
+        name: 'Cuenta Importada',
+        accountType: 'OTHER',
+        initialBalance: 0,
+        transactionCount: visionResult.transactions.length,
+        tempId: defaultAccountId, // Store temp ID for mapping later
+      };
+      accounts.push(defaultAccount);
+      accountIdMap.set('default', defaultAccountId);
+    }
+
+    const transactions: ParsedTransaction[] = visionResult.transactions.map((tx) => {
+      // Find account ID (use first account if only one, otherwise default)
+      const accountId =
+        accounts.length === 1
+          ? accountIdMap.values().next().value
+          : accountIdMap.get('default') || randomUUID();
+
+      return {
+        id: randomUUID(),
+        importedAccountId: accountId as string,
+        date: new Date(tx.date),
+        description: tx.description,
+        amount: tx.amount,
+        type: tx.type,
+        merchant: tx.merchant,
+        rawData: tx.rawData,
+      };
+    });
+
+    return { accounts, transactions };
+  } else if (fileType === 'CSV') {
+    // TODO: Implement CSV parsing
+    throw new Error('CSV parsing not implemented yet');
+  } else if (fileType === 'PDF') {
+    // TODO: Implement PDF parsing
+    throw new Error('PDF parsing not implemented yet');
+  }
+
+  throw new Error(`Unsupported file type: ${fileType}`);
 }
 
 /**
  * Create ImportedAccount records
- * TODO: Implement actual account creation
+ * Returns array of created account IDs in same order as input
  */
-async function createImportedAccounts(_jobId: string, accounts: ParsedAccount[]): Promise<number> {
+async function createImportedAccounts(jobId: string, accounts: ParsedAccount[]): Promise<string[]> {
   console.log(`[ImportWorker] Creating ${accounts.length} imported accounts`);
 
-  // TODO: Implement actual account creation
-  // await prisma.importedAccount.createMany({
-  //   data: accounts.map(account => ({
-  //     importJobId: jobId,
-  //     ...account
-  //   }))
-  // });
+  if (accounts.length === 0) {
+    return [];
+  }
 
-  return 0; // Placeholder
+  // Create accounts one by one to get their IDs
+  const createdIds: string[] = [];
+  for (const account of accounts) {
+    const created = await prisma.importedAccount.create({
+      data: {
+        importJobId: jobId,
+        name: account.name,
+        bankName: account.bankName,
+        accountNumber: account.accountNumber,
+        accountType: account.accountType as AccountType,
+        initialBalance: account.initialBalance,
+        transactionCount: account.transactionCount,
+      },
+    });
+    createdIds.push(created.id);
+  }
+
+  console.log(`[ImportWorker] Created ${createdIds.length} accounts`);
+  return createdIds;
 }
 
 /**
  * Create ImportedTransaction records
- * TODO: Implement actual transaction creation
+ * Uses createMany for better performance with large transaction sets
  */
 async function createImportedTransactions(
-  _jobId: string,
-  transactions: ParsedTransaction[]
+  jobId: string,
+  transactions: ParsedTransaction[],
+  accountIdMap: Map<string, string>
 ): Promise<number> {
   console.log(`[ImportWorker] Creating ${transactions.length} imported transactions`);
 
-  // TODO: Implement actual transaction creation
-  // await prisma.importedTransaction.createMany({
-  //   data: transactions.map(tx => ({
-  //     importJobId: jobId,
-  //     ...tx
-  //   }))
-  // });
+  if (transactions.length === 0) {
+    return 0;
+  }
 
-  return 0; // Placeholder
+  // Map temporary account IDs to real database IDs
+  const transactionsWithRealIds = transactions.map((tx) => {
+    const realAccountId = accountIdMap.get(tx.importedAccountId) || tx.importedAccountId;
+
+    return {
+      importJobId: jobId,
+      importedAccountId: realAccountId,
+      date: tx.date,
+      description: tx.description,
+      amount: tx.amount,
+      type: tx.type,
+      merchant: tx.merchant,
+      rawData: tx.rawData ?? undefined,
+    };
+  });
+
+  // Use createMany for bulk insert
+  const result = await prisma.importedTransaction.createMany({
+    data: transactionsWithRealIds,
+  });
+
+  console.log(`[ImportWorker] Created ${result.count} transactions`);
+  return result.count;
 }
 
 /**
@@ -297,11 +412,12 @@ interface ParsedAccount {
   accountType: string;
   initialBalance: number;
   transactionCount: number;
+  tempId?: string; // Temporary ID for mapping transactions
 }
 
 interface ParsedTransaction {
   id: string;
-  importedAccountId: string;
+  importedAccountId: string; // References tempId from ParsedAccount
   date: Date;
   description: string;
   amount: number;

@@ -8,7 +8,16 @@ import { isPasswordProtected } from '@/server/lib/parsers/password-detector';
 import { encryptPassword } from '@/server/lib/crypto';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_TYPES = ['text/csv', 'application/pdf', 'application/vnd.ms-excel'];
+const ALLOWED_TYPES = [
+  'text/csv',
+  'application/pdf',
+  'application/vnd.ms-excel',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/heic',
+  'image/heif',
+];
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,16 +44,20 @@ export async function POST(request: NextRequest) {
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Tipo de archivo no válido. Solo se permiten CSV y PDF' },
+        { error: 'Tipo de archivo no válido. Se permiten CSV, PDF e imágenes (JPG, PNG, HEIC)' },
         { status: 400 }
       );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileType = file.type.includes('pdf') ? 'PDF' : 'CSV';
 
-    // Check if password-protected
-    const requiresPassword = await isPasswordProtected(buffer, fileType);
+    // Determine file type
+    const isImage = file.type.startsWith('image/');
+    const fileType = isImage ? 'IMAGE' : file.type.includes('pdf') ? 'PDF' : 'CSV';
+
+    // Images don't need password protection, skip for images
+    const requiresPassword =
+      !isImage && (await isPasswordProtected(buffer, fileType as 'CSV' | 'PDF'));
 
     if (requiresPassword) {
       // Get user's Colombian ID
