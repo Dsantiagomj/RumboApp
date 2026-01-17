@@ -20,17 +20,18 @@ export default async function CreateAccountPage() {
   return (
     <div className="container mx-auto max-w-2xl px-4 py-12">
       <div className="space-y-8">
-        {/* Page Header */}
-        <div>
-          <h1 className="text-3xl font-bold">Crear Cuenta</h1>
-          <p className="text-muted-foreground mt-2">
-            Agrega una cuenta bancaria, tarjeta de crédito o préstamo para empezar a trackear tus
-            finanzas
-          </p>
-        </div>
-
-        {/* Account Creation Form */}
+        {/* Account Creation Form (has its own header with icon) */}
         <CreateAccountForm />
+
+        {/* Back button */}
+        <div className="flex justify-center">
+          <a
+            href="/dashboard"
+            className="hover:bg-accent text-muted-foreground rounded-lg px-4 py-2 text-sm transition-colors"
+          >
+            ← Volver al Dashboard
+          </a>
+        </div>
       </div>
     </div>
   );

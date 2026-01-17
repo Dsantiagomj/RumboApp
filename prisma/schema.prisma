@@ -550,6 +550,7 @@ model ImportedTransaction {
 enum FileType {
   CSV
   PDF
+  IMAGE
 }
 
 enum ImportJobStatus {
