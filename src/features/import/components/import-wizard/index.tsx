@@ -36,6 +36,12 @@ export function ImportWizard() {
   // Fetch user profile to get Colombian ID
   const { data: userProfile } = trpc.user.getProfile.useQuery();
 
+  // Debug: Log user profile on mount
+  useEffect(() => {
+    console.log('[Import] User profile loaded:', userProfile);
+    console.log('[Import] Colombian ID:', userProfile?.colombianId);
+  }, [userProfile]);
+
   // Poll import job status
   const { data: jobStatus } = trpc.import.getStatus.useQuery(
     { jobId: jobId! },
@@ -117,12 +123,21 @@ export function ImportWizard() {
         try {
           // Try with password if provided (from modal)
           if (retryPassword) {
+            console.log('[Import] Retrying with user-provided password');
             pngImages = await convertPDFWithPassword(base64PDF, retryPassword);
           } else {
             // First try without password
             try {
+              console.log('[Import] Trying PDF conversion without password');
               pngImages = await convertPDFWithPassword(base64PDF);
+              console.log('[Import] PDF converted successfully without password');
             } catch (error) {
+              console.log('[Import] PDF conversion failed:', error);
+              console.log(
+                '[Import] Error message:',
+                error instanceof Error ? error.message : 'Unknown error'
+              );
+
               // Check if it's a password error (PasswordException or password-related message)
               const isPasswordError =
                 error instanceof Error &&
@@ -131,14 +146,19 @@ export function ImportWizard() {
                   error.message.includes('Password') ||
                   error.message.includes('encrypted'));
 
+              console.log('[Import] Is password error?', isPasswordError);
+
               if (isPasswordError) {
                 // Try with user's Colombian ID if available
                 if (userProfile?.colombianId) {
+                  console.log('[Import] Trying with Colombian ID:', userProfile.colombianId);
                   toast.info('Intentando con tu cédula...');
                   try {
                     pngImages = await convertPDFWithPassword(base64PDF, userProfile.colombianId);
+                    console.log('[Import] PDF unlocked with Colombian ID');
                     toast.success('PDF desbloqueado con tu cédula');
-                  } catch {
+                  } catch (colombianIdError) {
+                    console.log('[Import] Colombian ID failed:', colombianIdError);
                     // Colombian ID didn't work, show password modal
                     toast.error('Tu cédula no funcionó. Por favor ingresa la contraseña.');
                     setShowPasswordModal(true);
@@ -146,6 +166,7 @@ export function ImportWizard() {
                     return;
                   }
                 } else {
+                  console.log('[Import] No Colombian ID, showing password modal');
                   // No Colombian ID, show password modal immediately
                   toast.info('Este PDF está protegido. Ingresa la contraseña.');
                   setShowPasswordModal(true);
@@ -153,6 +174,7 @@ export function ImportWizard() {
                   return;
                 }
               } else {
+                console.log('[Import] Not a password error, rethrowing');
                 // Not a password error, rethrow
                 throw error;
               }
