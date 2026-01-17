@@ -15,9 +15,9 @@ async function getPdfParse(): Promise<PdfParseFunction> {
     // pdf-parse is a CommonJS module, handle both default and module exports
     pdfParseModule =
       typeof module === 'function'
-        ? (module as PdfParseFunction)
-        : ((module as unknown as Record<string, unknown>).default as PdfParseFunction) ||
-          (module as PdfParseFunction);
+        ? (module as unknown as PdfParseFunction)
+        : ((module as Record<string, unknown>).default as unknown as PdfParseFunction) ||
+          (module as unknown as PdfParseFunction);
   }
   return pdfParseModule;
 }
