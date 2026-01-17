@@ -8,6 +8,8 @@
 import OpenAI from 'openai';
 import type { ChatCompletionContentPart } from 'openai/resources/chat/completions';
 
+import { extractJSON } from './json-extractor';
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -132,7 +134,6 @@ export async function extractTransactionsFromImage(
       ],
       max_tokens: 4096,
       temperature: 0.1, // Low temperature for consistent extraction
-      response_format: { type: 'json_object' }, // Ensure JSON response
     });
 
     const content = response.choices[0]?.message?.content;
@@ -140,8 +141,22 @@ export async function extractTransactionsFromImage(
       throw new Error('No response from vision API');
     }
 
+    // Extract JSON from response (handles markdown and malformed responses)
+    const jsonString = extractJSON(content);
+    if (!jsonString) {
+      console.error('[Vision API] Failed to extract JSON from response:', content);
+      throw new Error('No se pudo extraer JSON de la respuesta de Vision API');
+    }
+
     // Parse JSON response
-    const result = JSON.parse(content) as VisionExtractionResult;
+    let result: VisionExtractionResult;
+    try {
+      result = JSON.parse(jsonString) as VisionExtractionResult;
+    } catch (parseError) {
+      console.error('[Vision API] JSON parse error:', parseError);
+      console.error('[Vision API] Attempted to parse:', jsonString.substring(0, 500));
+      throw new Error('La respuesta de Vision API no es JSON válido');
+    }
 
     // Validate result structure
     if (!result.accounts || !result.transactions) {
@@ -218,7 +233,6 @@ Return valid JSON only.`,
       ],
       max_tokens: 16384, // Increased for multi-page PDFs with many transactions
       temperature: 0.1, // Low temperature for consistent extraction
-      response_format: { type: 'json_object' }, // Ensure JSON response
     });
 
     const responseContent = response.choices[0]?.message?.content;
@@ -226,8 +240,22 @@ Return valid JSON only.`,
       throw new Error('No response from vision API');
     }
 
+    // Extract JSON from response (handles markdown and malformed responses)
+    const jsonString = extractJSON(responseContent);
+    if (!jsonString) {
+      console.error('[Vision API] Failed to extract JSON from response:', responseContent);
+      throw new Error('No se pudo extraer JSON de la respuesta de Vision API');
+    }
+
     // Parse JSON response
-    const result = JSON.parse(responseContent) as VisionExtractionResult;
+    let result: VisionExtractionResult;
+    try {
+      result = JSON.parse(jsonString) as VisionExtractionResult;
+    } catch (parseError) {
+      console.error('[Vision API] JSON parse error:', parseError);
+      console.error('[Vision API] Attempted to parse:', jsonString.substring(0, 500));
+      throw new Error('La respuesta de Vision API no es JSON válido');
+    }
 
     // Validate result structure
     if (!result.accounts || !result.transactions) {
