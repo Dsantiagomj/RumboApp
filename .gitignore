@@ -80,3 +80,6 @@ docker/data/
 tmp/
 temp/
 *.tmp
+
+# Local file storage (development fallback for R2)
+.local-storage/

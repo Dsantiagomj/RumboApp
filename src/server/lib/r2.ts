@@ -24,6 +24,7 @@
  * ```
  */
 
+import path from 'path';
 import {
   S3Client,
   PutObjectCommand,
@@ -31,6 +32,7 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { isR2Configured, uploadToLocalStorage, deleteFromLocalStorage } from './local-storage';
 
 /**
  * Validates that all required R2 environment variables are set
@@ -130,6 +132,12 @@ export async function uploadToR2(
   contentType: string
 ): Promise<string> {
   try {
+    // Use local storage fallback if R2 is not configured (development mode)
+    if (!isR2Configured()) {
+      console.warn('[R2] Using local storage fallback (R2 not configured)');
+      return await uploadToLocalStorage(buffer, key);
+    }
+
     const client = getR2Client();
 
     const command = new PutObjectCommand({
@@ -166,6 +174,13 @@ export async function uploadToR2(
  */
 export async function getSignedDownloadUrl(key: string, expiresIn: number = 3600): Promise<string> {
   try {
+    // Use local storage fallback if R2 is not configured (development mode)
+    if (!isR2Configured()) {
+      console.warn('[R2] Using local storage fallback for download URL');
+      const filePath = path.join(process.cwd(), '.local-storage', key);
+      return `file://${filePath}`;
+    }
+
     const client = getR2Client();
 
     const command = new GetObjectCommand({
@@ -193,6 +208,13 @@ export async function getSignedDownloadUrl(key: string, expiresIn: number = 3600
  */
 export async function deleteFromR2(key: string): Promise<void> {
   try {
+    // Use local storage fallback if R2 is not configured (development mode)
+    if (!isR2Configured()) {
+      console.warn('[R2] Using local storage fallback for delete');
+      await deleteFromLocalStorage(key);
+      return;
+    }
+
     const client = getR2Client();
 
     const command = new DeleteObjectCommand({
