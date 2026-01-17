@@ -1,6 +1,17 @@
 import crypto from 'crypto';
 
 /**
+ * Derive a 32-byte key from the encryption key using scrypt
+ * Uses a fixed salt derived from the key itself for deterministic key derivation
+ */
+function deriveKey(encryptionKey: string): Buffer {
+  // Use SHA-256 hash of the key as a deterministic salt
+  // This ensures the same key always produces the same derived key
+  const salt = crypto.createHash('sha256').update(encryptionKey).digest();
+  return crypto.scryptSync(encryptionKey, salt, 32);
+}
+
+/**
  * Encrypts a password for temporary storage in the database.
  * Uses AES-256-CBC with a random IV for each encryption.
  *
@@ -15,7 +26,7 @@ export function encryptPassword(password: string): string {
   }
 
   const algorithm = 'aes-256-cbc';
-  const key = crypto.scryptSync(encryptionKey, 'salt', 32);
+  const key = deriveKey(encryptionKey);
   const iv = crypto.randomBytes(16);
 
   const cipher = crypto.createCipheriv(algorithm, key, iv);
@@ -41,7 +52,7 @@ export function decryptPassword(encryptedPassword: string): string {
 
   try {
     const algorithm = 'aes-256-cbc';
-    const key = crypto.scryptSync(encryptionKey, 'salt', 32);
+    const key = deriveKey(encryptionKey);
 
     // Split IV and encrypted data
     const parts = encryptedPassword.split(':');
