@@ -1,26 +1,5 @@
 import Papa from 'papaparse';
-
-// Type for pdf-parse function (CommonJS module)
-type PdfParseFunction = (
-  buffer: Buffer,
-  options?: { password?: string }
-) => Promise<{ text: string; [key: string]: unknown }>;
-
-// Lazy-load pdf-parse (CommonJS module without proper ESM support)
-let pdfParseModule: PdfParseFunction | null = null;
-async function getPdfParse(): Promise<PdfParseFunction> {
-  if (!pdfParseModule) {
-    // Use dynamic import to load CommonJS module
-    const module = await import('pdf-parse');
-    // pdf-parse is a CommonJS module, handle both default and module exports
-    pdfParseModule =
-      typeof module === 'function'
-        ? (module as unknown as PdfParseFunction)
-        : ((module as Record<string, unknown>).default as unknown as PdfParseFunction) ||
-          (module as unknown as PdfParseFunction);
-  }
-  return pdfParseModule;
-}
+import { PDFParse } from 'pdf-parse';
 
 /**
  * Detects if a CSV or PDF file is password-protected.
@@ -124,9 +103,8 @@ async function isCSVPasswordProtected(buffer: Buffer): Promise<boolean> {
 async function isPDFPasswordProtected(buffer: Buffer): Promise<boolean> {
   try {
     // Attempt to parse the PDF without a password
-    await (
-      await getPdfParse()
-    )(buffer);
+    const parser = new PDFParse({ data: buffer });
+    await parser.getText();
     // If successful, the PDF is not password-protected
     return false;
   } catch (error) {
@@ -209,7 +187,8 @@ export async function decryptFile(
 async function decryptPDF(buffer: Buffer, password: string): Promise<Buffer> {
   try {
     // Parse the PDF with the provided password
-    const data = await (await getPdfParse())(buffer, { password });
+    const parser = new PDFParse({ data: buffer, password });
+    const data = await parser.getText();
 
     if (!data.text) {
       throw new Error('No se pudo extraer el contenido del PDF');
