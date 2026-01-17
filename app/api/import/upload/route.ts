@@ -4,7 +4,8 @@ import { auth } from '@/server/auth';
 import { prisma } from '@/server/db';
 import { uploadToR2, generateImportKey } from '@/server/lib/r2';
 import { addImportJob } from '@/server/queue';
-import { isPasswordProtected } from '@/server/lib/parsers/password-detector';
+// TEMPORARILY DISABLED: Password detection has pdfjs worker issues in Next.js
+// import { isPasswordProtected } from '@/server/lib/parsers/password-detector';
 import { encryptPassword } from '@/server/lib/crypto';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -55,9 +56,10 @@ export async function POST(request: NextRequest) {
     const isImage = file.type.startsWith('image/');
     const fileType = isImage ? 'IMAGE' : file.type.includes('pdf') ? 'PDF' : 'CSV';
 
-    // Images don't need password protection, skip for images
-    const requiresPassword =
-      !isImage && (await isPasswordProtected(buffer, fileType as 'CSV' | 'PDF'));
+    // TEMPORARILY DISABLE password detection due to pdfjs worker issues in Node.js
+    // The worker will detect password errors and handle them appropriately
+    // TODO: Re-enable once pdfjs worker configuration is fixed for Next.js
+    const requiresPassword = false; // !isImage && (await isPasswordProtected(buffer, fileType as 'CSV' | 'PDF'));
 
     if (requiresPassword) {
       // Get user's Colombian ID
