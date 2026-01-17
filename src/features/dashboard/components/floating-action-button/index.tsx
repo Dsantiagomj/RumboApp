@@ -21,18 +21,17 @@ export function FloatingActionButton() {
       <motion.button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.3, type: 'spring', stiffness: 260, damping: 20 }}
-        whileHover={{ scale: 1.1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.3, ease: 'easeOut' }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Abrir menú para agregar nueva cuenta financiera"
         aria-haspopup="dialog"
         aria-expanded={isModalOpen}
-        className="group from-primary fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r to-purple-600 shadow-lg transition-all hover:shadow-xl sm:right-8 sm:bottom-8"
+        className="group from-primary fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r to-purple-600 shadow-lg transition-shadow hover:shadow-xl sm:right-8 sm:bottom-8"
       >
-        <div className="absolute inset-0 -translate-x-full rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-        <Plus className="relative h-6 w-6 text-white" />
+        <Plus className="h-6 w-6 text-white" />
         <span className="sr-only">Agregar Cuenta</span>
       </motion.button>
 
