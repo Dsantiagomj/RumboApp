@@ -1,11 +1,23 @@
 import Papa from 'papaparse';
 
+// Type for pdf-parse function (CommonJS module)
+type PdfParseFunction = (
+  buffer: Buffer,
+  options?: { password?: string }
+) => Promise<{ text: string; [key: string]: unknown }>;
+
 // Lazy-load pdf-parse (CommonJS module without proper ESM support)
-let pdfParseModule: any = null;
-async function getPdfParse() {
+let pdfParseModule: PdfParseFunction | null = null;
+async function getPdfParse(): Promise<PdfParseFunction> {
   if (!pdfParseModule) {
     // Use dynamic import to load CommonJS module
-    pdfParseModule = (await import('pdf-parse')).default;
+    const module = await import('pdf-parse');
+    // pdf-parse is a CommonJS module, handle both default and module exports
+    pdfParseModule =
+      typeof module === 'function'
+        ? (module as PdfParseFunction)
+        : ((module as unknown as Record<string, unknown>).default as PdfParseFunction) ||
+          (module as PdfParseFunction);
   }
   return pdfParseModule;
 }
