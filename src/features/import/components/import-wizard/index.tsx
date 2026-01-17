@@ -9,6 +9,7 @@ import { FileDropzone } from '../file-dropzone';
 import { ProcessingStep } from '../processing-step';
 import { AccountReviewStep, type AccountConfirmation } from '../account-review-step';
 import { SuccessStep } from '../success-step';
+import { PasswordPromptModal } from '../password-prompt-modal';
 import { toast } from 'sonner';
 
 /**
@@ -26,6 +27,14 @@ export function ImportWizard() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [accountConfirmations, setAccountConfirmations] = useState<AccountConfirmation[]>([]);
+
+  // Password prompt state
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [currentPDFBase64, setCurrentPDFBase64] = useState<string | null>(null);
+
+  // Fetch user profile to get Colombian ID
+  const { data: userProfile } = trpc.user.getProfile.useQuery();
 
   // Poll import job status
   const { data: jobStatus } = trpc.import.getStatus.useQuery(
@@ -62,35 +71,95 @@ export function ImportWizard() {
     },
   });
 
+  // Handle PDF conversion with password retry flow
+  const convertPDFWithPassword = async (
+    base64PDF: string,
+    password?: string
+  ): Promise<{ pageNumber: number; imageData: string; width: number; height: number }[]> => {
+    const { convertPDFToImages } = await import('@/features/import/utils/pdf-to-image');
+
+    return await convertPDFToImages(base64PDF, {
+      scale: 2.0,
+      maxPages: 10,
+      password,
+    });
+  };
+
   // Handle file upload
-  const handleFileSelected = async (file: File) => {
+  const handleFileSelected = async (file: File, retryPassword?: string) => {
     setIsUploading(true);
 
     try {
       // Check if it's a PDF file - if so, convert to PNG images first
       if (file.name.toLowerCase().endsWith('.pdf')) {
+        // Store file for password retry
+        setCurrentFile(file);
+
         toast.info('Convirtiendo PDF a imágenes...');
 
-        // Dynamically import PDF converter (client-side only)
-        const { convertPDFToImages } = await import('@/features/import/utils/pdf-to-image');
+        // Read file as base64 (reuse if already read)
+        let base64PDF = currentPDFBase64;
+        if (!base64PDF || retryPassword) {
+          const reader = new FileReader();
+          base64PDF = await new Promise<string>((resolve, reject) => {
+            reader.onload = (e) => {
+              const result = e.target?.result as string;
+              const base64 = result.split(',')[1]; // Remove "data:application/pdf;base64," prefix
+              resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          setCurrentPDFBase64(base64PDF);
+        }
 
-        // Read file as base64
-        const reader = new FileReader();
-        const base64PDF = await new Promise<string>((resolve, reject) => {
-          reader.onload = (e) => {
-            const result = e.target?.result as string;
-            const base64 = result.split(',')[1]; // Remove "data:application/pdf;base64," prefix
-            resolve(base64);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-
-        // Convert PDF to PNG images
-        const pngImages = await convertPDFToImages(base64PDF, {
-          scale: 2.0,
-          maxPages: 10,
-        });
+        let pngImages;
+        try {
+          // Try with password if provided (from modal)
+          if (retryPassword) {
+            pngImages = await convertPDFWithPassword(base64PDF, retryPassword);
+          } else {
+            // First try without password
+            try {
+              pngImages = await convertPDFWithPassword(base64PDF);
+            } catch (error) {
+              // Check if it's a password error
+              if (error instanceof Error && error.message.includes('protegido con contraseña')) {
+                // Try with user's Colombian ID if available
+                if (userProfile?.colombianId) {
+                  toast.info('Intentando con tu cédula...');
+                  try {
+                    pngImages = await convertPDFWithPassword(base64PDF, userProfile.colombianId);
+                    toast.success('PDF desbloqueado con tu cédula');
+                  } catch {
+                    // Colombian ID didn't work, show password modal
+                    toast.error('Tu cédula no funcionó. Por favor ingresa la contraseña.');
+                    setShowPasswordModal(true);
+                    setIsUploading(false);
+                    return;
+                  }
+                } else {
+                  // No Colombian ID, show password modal immediately
+                  setShowPasswordModal(true);
+                  setIsUploading(false);
+                  return;
+                }
+              } else {
+                // Not a password error, rethrow
+                throw error;
+              }
+            }
+          }
+        } catch (error) {
+          // Check if it's an incorrect password error
+          if (error instanceof Error && error.message.includes('Contraseña incorrecta')) {
+            toast.error('Contraseña incorrecta. Inténtalo de nuevo.');
+            setShowPasswordModal(true);
+            setIsUploading(false);
+            return;
+          }
+          throw error;
+        }
 
         if (pngImages.length === 0) {
           throw new Error('No se pudieron extraer páginas del PDF');
@@ -120,6 +189,11 @@ export function ImportWizard() {
         setJobId(result.jobId);
         setCurrentStep('processing');
         toast.success('Archivo subido correctamente. Procesando...');
+
+        // Clear password state on success
+        setCurrentFile(null);
+        setCurrentPDFBase64(null);
+        setShowPasswordModal(false);
       } else {
         // CSV or other files - upload normally via FormData
         const formData = new FormData();
@@ -173,6 +247,15 @@ export function ImportWizard() {
     setJobId(null);
     setCurrentStep('upload');
     setAccountConfirmations([]);
+  };
+
+  // Handle password modal submit
+  const handlePasswordSubmit = async (password: string) => {
+    if (!currentFile) {
+      throw new Error('No hay archivo para procesar');
+    }
+    // Retry file upload with the provided password
+    await handleFileSelected(currentFile, password);
   };
 
   // Auto-advance to review step when job is ready
@@ -326,6 +409,19 @@ export function ImportWizard() {
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Password Prompt Modal */}
+      <PasswordPromptModal
+        isOpen={showPasswordModal}
+        onClose={() => {
+          setShowPasswordModal(false);
+          setCurrentFile(null);
+          setCurrentPDFBase64(null);
+        }}
+        onSubmit={handlePasswordSubmit}
+        userHasColombianId={!!userProfile?.colombianId}
+        fileName={currentFile?.name || ''}
+      />
     </div>
   );
 }
