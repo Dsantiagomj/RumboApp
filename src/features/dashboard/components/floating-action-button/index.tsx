@@ -29,7 +29,7 @@ export function FloatingActionButton() {
         aria-label="Abrir menú para agregar nueva cuenta financiera"
         aria-haspopup="dialog"
         aria-expanded={isModalOpen}
-        className="group from-primary fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r to-purple-600 shadow-lg transition-shadow hover:shadow-xl sm:right-8 sm:bottom-8"
+        className="from-primary fixed right-6 bottom-6 z-50 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r to-purple-600 shadow-lg transition-shadow hover:shadow-xl sm:right-8 sm:bottom-8"
       >
         <Plus className="h-6 w-6 text-white" />
         <span className="sr-only">Agregar Cuenta</span>
