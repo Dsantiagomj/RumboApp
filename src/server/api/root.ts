@@ -10,6 +10,7 @@ import { authRouter } from '@/server/api/routers/auth';
 import { onboardingRouter } from '@/server/api/routers/onboarding';
 import { userRouter } from '@/server/api/routers/user';
 import { accountRouter } from '@/server/api/routers/account';
+import { importRouter } from '@/server/api/routers/import';
 
 /**
  * App Router
@@ -20,6 +21,7 @@ import { accountRouter } from '@/server/api/routers/account';
  * - onboardingRouter: Onboarding flow (personal info, identity verification)
  * - userRouter: User management
  * - accountRouter: Financial account management
+ * - importRouter: File import job management
  *
  * Future routers:
  * - transactionRouter
@@ -49,6 +51,7 @@ export const appRouter = createTRPCRouter({
   onboarding: onboardingRouter,
   user: userRouter,
   account: accountRouter,
+  import: importRouter,
 
   // Future routers will be added here:
   // transaction: transactionRouter,
