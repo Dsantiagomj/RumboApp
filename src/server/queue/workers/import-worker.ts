@@ -255,11 +255,10 @@ async function parseFile(
     if (images && images.length > 0) {
       console.log(`[ImportWorker] Processing ${images.length} PNG images from PDF conversion`);
 
-      // For multi-page PDFs converted to PNG, process the first image
-      // TODO: Implement multi-page Vision API processing
-      const firstImageBuffer = Buffer.from(images[0], 'base64');
-      const mimeType = 'image/png';
-      const visionResult = await extractTransactionsFromImage(firstImageBuffer, mimeType);
+      // Process ALL images in a single Vision API call for better context
+      const { extractTransactionsFromImages } =
+        await import('@/server/lib/vision/extract-transactions');
+      const visionResult = await extractTransactionsFromImages(images);
 
       // Validate extraction quality
       const validation = validateExtractionQuality(visionResult);

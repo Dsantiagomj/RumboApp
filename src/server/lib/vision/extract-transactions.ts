@@ -6,6 +6,7 @@
  */
 
 import OpenAI from 'openai';
+import type { ChatCompletionContentPart } from 'openai/resources/chat/completions';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -151,6 +152,97 @@ export async function extractTransactionsFromImage(
     if (result.confidence === undefined) {
       result.confidence = result.transactions.length > 0 ? 75 : 0;
     }
+
+    return result;
+  } catch (error) {
+    console.error('Vision API extraction error:', error);
+
+    // Return empty result with error
+    return {
+      accounts: [],
+      transactions: [],
+      confidence: 0,
+      warnings: [error instanceof Error ? error.message : 'Unknown error during extraction'],
+    };
+  }
+}
+
+/**
+ * Extract transactions from multiple bank statement images (multi-page PDF)
+ * Processes all images in a single Vision API call for better context and efficiency
+ */
+export async function extractTransactionsFromImages(
+  base64Images: string[]
+): Promise<VisionExtractionResult> {
+  try {
+    if (base64Images.length === 0) {
+      throw new Error('No images provided');
+    }
+
+    // Build content array with prompt + all images
+    const content: ChatCompletionContentPart[] = [
+      {
+        type: 'text',
+        text: `Extract all accounts and transactions from this Colombian bank statement.
+
+IMPORTANT: This statement has ${base64Images.length} page(s). Analyze ALL pages and extract ALL transactions from every page.
+DO NOT omit any transactions - include everything you see across all pages in a single combined list.
+
+Return valid JSON only.`,
+      },
+    ];
+
+    // Add all images
+    for (const base64Image of base64Images) {
+      content.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:image/png;base64,${base64Image}`,
+          detail: 'high', // High detail for better OCR
+        },
+      });
+    }
+
+    // Call GPT-4 Vision with all images
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o', // gpt-4o has vision capabilities
+      messages: [
+        {
+          role: 'system',
+          content: VISION_SYSTEM_PROMPT,
+        },
+        {
+          role: 'user',
+          content,
+        },
+      ],
+      max_tokens: 16384, // Increased for multi-page PDFs with many transactions
+      temperature: 0.1, // Low temperature for consistent extraction
+      response_format: { type: 'json_object' }, // Ensure JSON response
+    });
+
+    const responseContent = response.choices[0]?.message?.content;
+    if (!responseContent) {
+      throw new Error('No response from vision API');
+    }
+
+    // Parse JSON response
+    const result = JSON.parse(responseContent) as VisionExtractionResult;
+
+    // Validate result structure
+    if (!result.accounts || !result.transactions) {
+      throw new Error('Invalid response format from vision API');
+    }
+
+    // Add confidence based on token usage (heuristic)
+    if (result.confidence === undefined) {
+      result.confidence = result.transactions.length > 0 ? 75 : 0;
+    }
+
+    // Log extraction result (intentional production log for monitoring)
+    console.error(
+      `[Vision API] Extracted ${result.transactions.length} transactions from ${base64Images.length} page(s)`
+    );
 
     return result;
   } catch (error) {
