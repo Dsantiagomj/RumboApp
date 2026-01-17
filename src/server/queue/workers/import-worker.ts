@@ -23,8 +23,9 @@ import { ImportJobStatus } from '@prisma/client';
 import { prisma } from '@/server/db';
 import { QUEUE_NAMES } from '../types';
 import type { ImportJobData, ImportJobResult } from '../types';
-import { decryptPassword } from '@/server/lib/crypto';
-import { decryptFile } from '@/server/lib/parsers/password-detector';
+// TEMPORARILY DISABLED: Password detection moved to client-side
+// import { decryptPassword } from '@/server/lib/crypto';
+// import { decryptFile } from '@/server/lib/parsers/password-detector';
 import {
   extractTransactionsFromImage,
   validateExtractionQuality,
@@ -36,12 +37,13 @@ import {
   validateTransactions,
 } from '@/server/lib/parsers/transaction-extractor';
 import { detectAccounts } from '@/server/lib/parsers/account-detector';
-import { parsePDF, validatePDF, hasTransactionData } from '@/server/lib/parsers/pdf-parser';
-import {
-  extractPDFTransactions,
-  validatePDFTransactions,
-} from '@/server/lib/parsers/pdf-transaction-extractor';
-import { detectPDFAccount, detectPDFBankFormat } from '@/server/lib/parsers/pdf-account-detector';
+// TEMPORARILY DISABLED: PDF parsing moved to client-side
+// import { parsePDF, validatePDF, hasTransactionData } from '@/server/lib/parsers/pdf-parser';
+// import {
+//   extractPDFTransactions,
+//   validatePDFTransactions,
+// } from '@/server/lib/parsers/pdf-transaction-extractor';
+// import { detectPDFAccount, detectPDFBankFormat } from '@/server/lib/parsers/pdf-account-detector';
 
 /**
  * Worker Configuration
@@ -78,23 +80,18 @@ async function processImportJob(
 
     // Step 3: Download file from storage
     await updateJobStatus(jobId, ImportJobStatus.PROCESSING, 20);
-    let fileBuffer = await downloadFile(fileUrl);
+    const fileBuffer = await downloadFile(fileUrl);
 
     // Step 3.5: Handle password-protected files
     if (hasPassword && importJob.passwordHash) {
-      console.log(`[ImportWorker] Decrypting password-protected file for job ${jobId}`);
+      // TEMPORARILY DISABLED: Password handling moved to client-side
+      // Password-protected files should be decrypted client-side before upload
+      throw new Error(
+        'Archivos protegidos con contraseña deben ser procesados en el cliente. ' +
+          'Por favor, contacta al soporte técnico.'
+      );
 
-      // Decrypt the stored password
-      const password = decryptPassword(importJob.passwordHash);
-
-      // Decrypt the file content
-      fileBuffer = await decryptFile(fileBuffer, password, fileType as 'CSV' | 'PDF');
-
-      // Clear the password from database for security
-      await prisma.importJob.update({
-        where: { id: jobId },
-        data: { passwordHash: null },
-      });
+      // TODO: Remove this block when client-side PDF conversion is implemented
 
       console.log(`[ImportWorker] File decrypted and password cleared for job ${jobId}`);
     }
@@ -414,101 +411,19 @@ async function parseFile(
 
     return { accounts, transactions };
   } else if (fileType === 'PDF') {
-    // Parse PDF with password support
-    console.log('[ImportWorker] Parsing PDF file with text extraction');
-
-    // Get password from jobId lookup
-    const importJob = await prisma.importJob.findUnique({
-      where: { id: jobId },
-      select: { passwordHash: true },
-    });
-
-    let password: string | undefined;
-    if (importJob?.passwordHash) {
-      password = decryptPassword(importJob.passwordHash);
-    }
-
-    const pdfResult = await parsePDF(fileBuffer, { password });
-
-    // Validate PDF structure
-    const pdfValidation = validatePDF(pdfResult);
-    if (!pdfValidation.isValid) {
-      throw new Error(`PDF validation failed: ${pdfValidation.errors.join(', ')}`);
-    }
-
-    console.log(
-      `[ImportWorker] PDF parsed: ${pdfResult.pages} pages, ${pdfResult.text.length} characters`
+    // TEMPORARILY DISABLED: PDF parsing moved to client-side
+    // PDFs should be converted to PNG images client-side before upload
+    // TODO: Implement client-side PDF to PNG conversion
+    // Client should convert PDF pages to PNG images using pdfjs-dist
+    // Then send PNG images to server for Vision API processing
+    throw new Error(
+      'La importación de PDFs no está disponible temporalmente. ' +
+        'Por favor, usa archivos CSV o imágenes (JPG/PNG) de tu extracto bancario.'
     );
-
-    // Check if PDF has transaction data
-    if (!hasTransactionData(pdfResult.text)) {
-      throw new Error(
-        'PDF does not contain recognizable transaction data. It may be a scanned image requiring OCR.'
-      );
-    }
-
-    // Extract transactions and metadata from PDF text
-    const { transactions: extractedTransactions, metadata } = extractPDFTransactions(
-      pdfResult.text
-    );
-
-    console.log(`[ImportWorker] Extracted ${extractedTransactions.length} transactions from PDF`);
-
-    // Validate transactions
-    const txValidation = validatePDFTransactions(extractedTransactions);
-    if (!txValidation.isValid) {
-      throw new Error(`PDF transaction validation failed: ${txValidation.errors.join(', ')}`);
-    }
-
-    // Detect bank format
-    const formatDetection = detectPDFBankFormat(metadata);
-    const detectedFormat = formatDetection.format;
-
-    console.log(
-      `[ImportWorker] PDF bank format detected: ${detectedFormat} (confidence: ${formatDetection.confidence.toFixed(2)})`
-    );
-
-    // Detect account from metadata
-    const detectedAccount = detectPDFAccount(metadata, extractedTransactions);
-
-    console.log(`[ImportWorker] Detected account: ${detectedAccount.name}`);
-
-    // Update ImportJob with detected bank format
-    await prisma.importJob.update({
-      where: { id: jobId },
-      data: { bankFormat: detectedFormat },
-    });
-
-    // Convert to ParsedAccount/ParsedTransaction format
-    const accountId = randomUUID();
-
-    const accounts: ParsedAccount[] = [
-      {
-        name: detectedAccount.name,
-        bankName: detectedAccount.bankName,
-        accountNumber: detectedAccount.accountNumber,
-        accountType: detectedAccount.accountType,
-        initialBalance: detectedAccount.initialBalance,
-        transactionCount: detectedAccount.transactionCount,
-        tempId: accountId,
-      },
-    ];
-
-    const transactions: ParsedTransaction[] = extractedTransactions.map((tx) => ({
-      id: randomUUID(),
-      importedAccountId: accountId,
-      date: tx.date,
-      description: tx.description,
-      amount: tx.amount,
-      type: tx.type,
-      merchant: tx.merchant,
-      rawData: { rawLine: tx.rawLine, balance: tx.balance },
-    }));
-
-    return { accounts, transactions };
   }
 
-  throw new Error(`Unsupported file type: ${fileType}`);
+  // Unknown file type
+  throw new Error(`Tipo de archivo no soportado: ${fileType}`);
 }
 
 /**
