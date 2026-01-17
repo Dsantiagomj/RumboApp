@@ -26,3 +26,18 @@ export type { DetectedAccount } from './account-detector';
 
 // Password Detector (already exists)
 export { isPasswordProtected, decryptFile } from './password-detector';
+
+// PDF Parser
+export { parsePDF, validatePDF, extractLines, hasTransactionData } from './pdf-parser';
+export type { PDFParseResult, PDFParseOptions } from './pdf-parser';
+
+// PDF Transaction Extractor
+export {
+  extractPDFTransactions,
+  validatePDFTransactions,
+  extractStatementMetadata,
+} from './pdf-transaction-extractor';
+export type { PDFExtractedTransaction, PDFStatementMetadata } from './pdf-transaction-extractor';
+
+// PDF Account Detector
+export { detectPDFAccount, detectPDFBankFormat } from './pdf-account-detector';

@@ -35,6 +35,12 @@ import {
   validateTransactions,
 } from '@/server/lib/parsers/transaction-extractor';
 import { detectAccounts } from '@/server/lib/parsers/account-detector';
+import { parsePDF, validatePDF, hasTransactionData } from '@/server/lib/parsers/pdf-parser';
+import {
+  extractPDFTransactions,
+  validatePDFTransactions,
+} from '@/server/lib/parsers/pdf-transaction-extractor';
+import { detectPDFAccount, detectPDFBankFormat } from '@/server/lib/parsers/pdf-account-detector';
 
 /**
  * Worker Configuration
@@ -400,8 +406,98 @@ async function parseFile(
 
     return { accounts, transactions };
   } else if (fileType === 'PDF') {
-    // TODO: Implement PDF parsing
-    throw new Error('PDF parsing not implemented yet');
+    // Parse PDF with password support
+    console.log('[ImportWorker] Parsing PDF file with text extraction');
+
+    // Get password from jobId lookup
+    const importJob = await prisma.importJob.findUnique({
+      where: { id: jobId },
+      select: { passwordHash: true },
+    });
+
+    let password: string | undefined;
+    if (importJob?.passwordHash) {
+      password = decryptPassword(importJob.passwordHash);
+    }
+
+    const pdfResult = await parsePDF(fileBuffer, { password });
+
+    // Validate PDF structure
+    const pdfValidation = validatePDF(pdfResult);
+    if (!pdfValidation.isValid) {
+      throw new Error(`PDF validation failed: ${pdfValidation.errors.join(', ')}`);
+    }
+
+    console.log(
+      `[ImportWorker] PDF parsed: ${pdfResult.pages} pages, ${pdfResult.text.length} characters`
+    );
+
+    // Check if PDF has transaction data
+    if (!hasTransactionData(pdfResult.text)) {
+      throw new Error(
+        'PDF does not contain recognizable transaction data. It may be a scanned image requiring OCR.'
+      );
+    }
+
+    // Extract transactions and metadata from PDF text
+    const { transactions: extractedTransactions, metadata } = extractPDFTransactions(
+      pdfResult.text
+    );
+
+    console.log(`[ImportWorker] Extracted ${extractedTransactions.length} transactions from PDF`);
+
+    // Validate transactions
+    const txValidation = validatePDFTransactions(extractedTransactions);
+    if (!txValidation.isValid) {
+      throw new Error(`PDF transaction validation failed: ${txValidation.errors.join(', ')}`);
+    }
+
+    // Detect bank format
+    const formatDetection = detectPDFBankFormat(metadata);
+    const detectedFormat = formatDetection.format;
+
+    console.log(
+      `[ImportWorker] PDF bank format detected: ${detectedFormat} (confidence: ${formatDetection.confidence.toFixed(2)})`
+    );
+
+    // Detect account from metadata
+    const detectedAccount = detectPDFAccount(metadata, extractedTransactions);
+
+    console.log(`[ImportWorker] Detected account: ${detectedAccount.name}`);
+
+    // Update ImportJob with detected bank format
+    await prisma.importJob.update({
+      where: { id: jobId },
+      data: { bankFormat: detectedFormat },
+    });
+
+    // Convert to ParsedAccount/ParsedTransaction format
+    const accountId = randomUUID();
+
+    const accounts: ParsedAccount[] = [
+      {
+        name: detectedAccount.name,
+        bankName: detectedAccount.bankName,
+        accountNumber: detectedAccount.accountNumber,
+        accountType: detectedAccount.accountType,
+        initialBalance: detectedAccount.initialBalance,
+        transactionCount: detectedAccount.transactionCount,
+        tempId: accountId,
+      },
+    ];
+
+    const transactions: ParsedTransaction[] = extractedTransactions.map((tx) => ({
+      id: randomUUID(),
+      importedAccountId: accountId,
+      date: tx.date,
+      description: tx.description,
+      amount: tx.amount,
+      type: tx.type,
+      merchant: tx.merchant,
+      rawData: { rawLine: tx.rawLine, balance: tx.balance },
+    }));
+
+    return { accounts, transactions };
   }
 
   throw new Error(`Unsupported file type: ${fileType}`);
