@@ -236,7 +236,7 @@ export async function exampleMonitorJobProgress(jobId: string) {
   console.log(`Job progress: ${progress}%`);
 
   // Listen for progress updates (Note: job parameter is jobId string in BullMQ v5)
-  importQueue.on('progress', (job: string | { id: string }, progress: number | object) => {
+  importQueue.on('progress', (job: string | { id: string }, progress: number | object | string) => {
     const id = typeof job === 'string' ? job : job.id;
     if (id === jobId) {
       console.log(`Job ${jobId} progress: ${typeof progress === 'number' ? progress : 0}%`);
