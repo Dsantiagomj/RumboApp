@@ -17,7 +17,7 @@
 import { randomUUID } from 'crypto';
 import type { Job } from 'bullmq';
 import { Worker } from 'bullmq';
-import type { AccountType } from '@prisma/client';
+import type { AccountType, TransactionType } from '@prisma/client';
 import { ImportJobStatus } from '@prisma/client';
 import { prisma } from '@/server/db';
 import { QUEUE_NAMES } from '../types';
@@ -28,6 +28,13 @@ import {
   extractTransactionsFromImage,
   validateExtractionQuality,
 } from '@/server/lib/vision/extract-transactions';
+import { parseCSV, validateCSV } from '@/server/lib/parsers/csv-parser';
+import { detectBankFormat, validateBankFormat } from '@/server/lib/parsers/bank-format-detector';
+import {
+  extractTransactions,
+  validateTransactions,
+} from '@/server/lib/parsers/transaction-extractor';
+import { detectAccounts } from '@/server/lib/parsers/account-detector';
 
 /**
  * Worker Configuration
@@ -87,7 +94,7 @@ async function processImportJob(
 
     // Step 4: Parse file based on type
     await updateJobStatus(jobId, ImportJobStatus.PARSING, 40);
-    const parsedData = await parseFile(fileBuffer, fileType, bankFormat);
+    const parsedData = await parseFile(fileBuffer, fileType, jobId, bankFormat);
 
     // Step 5: Create ImportedAccount records
     await updateJobStatus(jobId, ImportJobStatus.PARSING, 60);
@@ -223,6 +230,7 @@ async function downloadFile(fileUrl: string): Promise<Buffer> {
 async function parseFile(
   fileBuffer: Buffer,
   fileType: string,
+  jobId: string,
   _bankFormat?: string
 ): Promise<{
   accounts: ParsedAccount[];
@@ -294,8 +302,103 @@ async function parseFile(
 
     return { accounts, transactions };
   } else if (fileType === 'CSV') {
-    // TODO: Implement CSV parsing
-    throw new Error('CSV parsing not implemented yet');
+    // Parse CSV with encoding detection
+    console.log('[ImportWorker] Parsing CSV file with encoding detection');
+    const csvResult = parseCSV(fileBuffer, {
+      hasHeaders: true,
+      skipEmptyLines: true,
+      trimValues: true,
+    });
+
+    // Validate CSV structure
+    const csvValidation = validateCSV(csvResult);
+    if (!csvValidation.isValid) {
+      throw new Error(`CSV validation failed: ${csvValidation.errors.join(', ')}`);
+    }
+
+    console.log(
+      `[ImportWorker] CSV parsed: ${csvResult.rowCount} rows, ${csvResult.columnCount} columns, encoding: ${csvResult.encoding}`
+    );
+
+    // Detect bank format
+    const formatDetection = detectBankFormat(csvResult);
+    const detectedFormat = formatDetection.format;
+
+    console.log(
+      `[ImportWorker] Bank format detected: ${detectedFormat} (confidence: ${formatDetection.confidence.toFixed(2)})`
+    );
+
+    // Validate bank format
+    const formatValidation = validateBankFormat(csvResult, detectedFormat);
+    if (!formatValidation.isValid) {
+      console.warn(
+        `[ImportWorker] Bank format validation warnings: ${formatValidation.errors.join(', ')}`
+      );
+      // Continue anyway - these are warnings, not critical errors
+    }
+
+    // Extract transactions
+    const extractedTransactions = extractTransactions(csvResult, formatDetection.detectedPattern);
+
+    console.log(`[ImportWorker] Extracted ${extractedTransactions.length} transactions`);
+
+    // Validate transactions
+    const txValidation = validateTransactions(extractedTransactions);
+    if (!txValidation.isValid) {
+      throw new Error(`Transaction validation failed: ${txValidation.errors.join(', ')}`);
+    }
+
+    // Detect accounts
+    const detectedAccounts = detectAccounts(
+      csvResult,
+      extractedTransactions,
+      detectedFormat,
+      undefined // fileName not available here, could be passed from job data
+    );
+
+    console.log(`[ImportWorker] Detected ${detectedAccounts.length} accounts`);
+
+    // Update ImportJob with detected bank format
+    await prisma.importJob.update({
+      where: { id: jobId },
+      data: { bankFormat: detectedFormat },
+    });
+
+    // Convert to ParsedAccount/ParsedTransaction format
+    const accountIdMap = new Map<string, string>();
+
+    const accounts: ParsedAccount[] = detectedAccounts.map((account) => {
+      const accountId = randomUUID();
+      accountIdMap.set(account.name, accountId);
+
+      return {
+        name: account.name,
+        bankName: account.bankName,
+        accountNumber: account.accountNumber,
+        accountType: account.accountType,
+        initialBalance: account.initialBalance,
+        transactionCount: account.transactionCount,
+        tempId: accountId,
+      };
+    });
+
+    const transactions: ParsedTransaction[] = extractedTransactions.map((tx) => {
+      // Map transaction to the first account (for now)
+      const accountId = accountIdMap.values().next().value as string;
+
+      return {
+        id: randomUUID(),
+        importedAccountId: accountId,
+        date: tx.date,
+        description: tx.description,
+        amount: tx.amount,
+        type: tx.type,
+        merchant: tx.merchant,
+        rawData: tx.rawData,
+      };
+    });
+
+    return { accounts, transactions };
   } else if (fileType === 'PDF') {
     // TODO: Implement PDF parsing
     throw new Error('PDF parsing not implemented yet');
@@ -421,7 +524,7 @@ interface ParsedTransaction {
   date: Date;
   description: string;
   amount: number;
-  type: 'INCOME' | 'EXPENSE';
+  type: TransactionType;
   merchant?: string;
   rawData?: unknown;
 }
