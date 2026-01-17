@@ -15,6 +15,7 @@
  */
 
 import { randomUUID } from 'crypto';
+import fs from 'fs/promises';
 import type { Job } from 'bullmq';
 import { Worker } from 'bullmq';
 import type { AccountType, TransactionType } from '@prisma/client';
@@ -204,8 +205,8 @@ async function validateJobData(data: ImportJobData) {
     throw new Error(`User ${data.userId} not found`);
   }
 
-  // Validate file URL
-  if (!data.fileUrl || !data.fileUrl.startsWith('http')) {
+  // Validate file URL (accept both http/https and file:// for local development)
+  if (!data.fileUrl || (!data.fileUrl.startsWith('http') && !data.fileUrl.startsWith('file://'))) {
     throw new Error('Invalid file URL');
   }
 
@@ -213,12 +214,19 @@ async function validateJobData(data: ImportJobData) {
 }
 
 /**
- * Download file from storage (Cloudflare R2)
- * Uses public R2 URL to fetch file
+ * Download file from storage (Cloudflare R2 or local filesystem)
+ * Uses public R2 URL to fetch file, or reads from local filesystem for development
  */
 async function downloadFile(fileUrl: string): Promise<Buffer> {
   console.log(`[ImportWorker] Downloading file from ${fileUrl}`);
 
+  // Handle local file:// URLs for development
+  if (fileUrl.startsWith('file://')) {
+    const filePath = fileUrl.replace('file://', '');
+    return await fs.readFile(filePath);
+  }
+
+  // Handle remote HTTP/HTTPS URLs (R2)
   const response = await fetch(fileUrl);
 
   if (!response.ok) {
