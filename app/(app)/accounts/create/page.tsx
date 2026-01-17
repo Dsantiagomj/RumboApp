@@ -31,6 +31,16 @@ export default async function CreateAccountPage() {
 
         {/* Account Creation Form */}
         <CreateAccountForm />
+
+        {/* Back button */}
+        <div className="flex justify-center">
+          <a
+            href="/dashboard"
+            className="hover:bg-accent text-muted-foreground rounded-lg px-4 py-2 text-sm transition-colors"
+          >
+            ← Volver al Dashboard
+          </a>
+        </div>
       </div>
     </div>
   );
