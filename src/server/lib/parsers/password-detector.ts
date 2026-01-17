@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import { PDFParse } from 'pdf-parse';
+import pdfParse from 'pdf-parse';
 
 /**
  * Detects if a CSV or PDF file is password-protected.
@@ -102,14 +102,8 @@ async function isCSVPasswordProtected(buffer: Buffer): Promise<boolean> {
  */
 async function isPDFPasswordProtected(buffer: Buffer): Promise<boolean> {
   try {
-    // Attempt to parse the PDF without a password
-    // Disable worker for Node.js environment
-    const parser = new PDFParse({
-      data: buffer,
-      useWorkerFetch: false,
-      isEvalSupported: false,
-    });
-    await parser.getText();
+    // Attempt to parse the PDF without a password using pdf-parse v1
+    await pdfParse(buffer);
     // If successful, the PDF is not password-protected
     return false;
   } catch (error) {
@@ -191,15 +185,8 @@ export async function decryptFile(
  */
 async function decryptPDF(buffer: Buffer, password: string): Promise<Buffer> {
   try {
-    // Parse the PDF with the provided password
-    // Disable worker for Node.js environment
-    const parser = new PDFParse({
-      data: buffer,
-      password,
-      useWorkerFetch: false,
-      isEvalSupported: false,
-    });
-    const data = await parser.getText();
+    // Parse the PDF with the provided password using pdf-parse v1
+    const data = await pdfParse(buffer, { password });
 
     if (!data.text) {
       throw new Error('No se pudo extraer el contenido del PDF');

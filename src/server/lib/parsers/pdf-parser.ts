@@ -2,7 +2,7 @@
  * PDF Parser
  *
  * Extracts text from PDF files with password support
- * Uses pdf-parse v2 for text extraction
+ * Uses pdf-parse v1 for text extraction (stable in Node.js)
  */
 
 export interface PDFParseResult {
@@ -23,25 +23,17 @@ export async function parsePDF(
   options: PDFParseOptions = {}
 ): Promise<PDFParseResult> {
   try {
-    // Dynamic import for pdf-parse v2
-    const { PDFParse } = await import('pdf-parse');
+    // Dynamic import for pdf-parse v1
+    const pdfParse = (await import('pdf-parse')).default;
 
-    // Create parser with buffer and optional password
-    // Disable worker for Node.js environment
-    const parser = new PDFParse({
-      data: buffer,
-      password: options.password,
-      useWorkerFetch: false,
-      isEvalSupported: false,
-    });
-
-    // Extract text
-    const result = await parser.getText();
+    // Parse PDF with optional password
+    const parseOptions = options.password ? { password: options.password } : {};
+    const result = await pdfParse(buffer, parseOptions);
 
     return {
       text: result.text,
-      pages: (result as { numPages?: number }).numPages,
-      metadata: (result as { metadata?: Record<string, unknown> }).metadata,
+      pages: result.numpages,
+      metadata: result.info,
     };
   } catch (error) {
     if (error instanceof Error) {
