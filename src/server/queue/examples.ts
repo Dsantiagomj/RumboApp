@@ -9,6 +9,7 @@
 
 import { addImportJob, addCategorizationJob, getQueueStats } from './index';
 import type { ImportJobData, CategorizationJobData } from './types';
+import type { JobProgress } from 'bullmq';
 
 /**
  * Example 1: Add Import Job
@@ -236,7 +237,7 @@ export async function exampleMonitorJobProgress(jobId: string) {
   console.log(`Job progress: ${progress}%`);
 
   // Listen for progress updates (Note: job parameter is jobId string in BullMQ v5)
-  importQueue.on('progress', (job: string | { id: string }, progress: number | object | string) => {
+  importQueue.on('progress', (job: string | { id: string }, progress: JobProgress) => {
     const id = typeof job === 'string' ? job : job.id;
     if (id === jobId) {
       console.log(`Job ${jobId} progress: ${typeof progress === 'number' ? progress : 0}%`);
